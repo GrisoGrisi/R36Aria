@@ -45,5 +45,7 @@ This is all vibe coded btw, im still learning coding, this project helped me a l
 
 You can use this project to do whathever you want if it helps you. 
 
+This project was tested on dArkOSRE-R36 03082026, on a genuine R36S-V22 2024-12-18
+
 # Aria2 was made by Tatsuhiro Tsujikawa.
 https://aria2.github.io/
