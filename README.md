@@ -42,41 +42,52 @@ Just drag and drop .torrent files on the /torrents folder and edit /config/optio
 
 ```
 
+## .zip Files Handling ##
+
+After a download is complete, if a .zip file is detected, you’ll be given three options:
+
+- Keep the .zip file as is (without extracting).
+- Extract the contents and delete the .zip file.
+- Extract the contents and keep the .zip file.
+
+The extracted contents will be stored in the same folder, not in a subfolder.
 
 # CONTROLS:
 
-D-Pad: Navigate through the different options.
+**Navigation Controls**
 
-A: Select an option - Select a file to download.
+- D-Pad: Navigate through the different options.
 
-B: Return to the main menu.
+- A: Select an option - Select a file to download.
 
-X: Start download.
+- B: Return to the main menu.
 
-SELECT: Open or close the search bar.
+- X: Start download.
 
-SELECT + START: Close the app.
+- SELECT: Open or close the search bar.
 
-
-
-Search bar controls:
+- SELECT + START: Close the app.
 
 
 
-A: Type the selected letter.
-
-Y: Delete the last character.
-
-X: Insert a space.
-
-B: Clear the search bar and close the on-screen keyboard.
-
-SELECT or START: Close the search bar with the filter applied.
+**Search bar controls:**
 
 
 
+- A: Type the selected letter.
+
+- Y: Delete the last character.
+
+- X: Insert a space.
+
+- B: Clear the search bar and close the on-screen keyboard.
+
+- SELECT or START: Close the search bar with the filter applied.
 
 
+
+
+### Notes ###
 
 This is all vibe coded btw, im still learning coding, this project helped me a lot to understand how OOP, python and git works, please don´t be too harsh lol.
 
