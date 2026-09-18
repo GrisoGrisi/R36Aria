@@ -1,0 +1,23 @@
+# Carpeta torrents/
+
+Aca van los archivos .torrent que quieras usar en vez de un magnet.
+
+## Como usarlo
+
+1. Poné el archivo .torrent en esta carpeta, por ejemplo `gatos.torrent`.
+2. En `config/options.json`, en vez de la clave `"magnet"` usá `"torrent_path"`
+   con el nombre del archivo:
+
+   ```json
+   {
+     "nombre": "Gatos",
+     "torrent_path": "gatos.torrent",
+     "carpeta_destino": "/gatos"
+   }
+   ```
+
+## Nota
+
+Tambien podes usar una ruta absoluta en `torrent_path` (por ejemplo
+`/roms/torrents/gatos.torrent`) si preferis guardarlos en otro lado de la
+consola en vez de esta carpeta.

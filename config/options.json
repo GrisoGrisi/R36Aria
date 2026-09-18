@@ -1,0 +1,14 @@
+{
+  "opciones": [
+    {
+      "nombre": "Ejemplo 1",
+      "magnet": "magnet:?xt=urn:btih:REEMPLAZAR_CON_HASH_REAL",
+      "carpeta_destino": "/roms/ports/downloads"
+    },
+    {
+      "nombre": "Ejemplo 2",
+      "torrent_path": "gatos.torrent",
+      "carpeta_destino": "/gatos"
+    }
+  ]
+}

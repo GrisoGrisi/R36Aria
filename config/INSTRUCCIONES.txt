@@ -1,0 +1,58 @@
+Para añadir torrents a esta aplicacion:
+
+Primero que nada deben añadir los archivos .torrent que quieran abrir dentro de la carpeta torrents
+o tener el magnet link del torrent que necesiten.
+
+Luego deben editar el archivo ´´options.json´´ dentro de la carpeta config.
+Cada torrent se añade a la lista agregando la siguiente sintaxis al archivo:
+
+{
+      "nombre": "NOMBRE QUE APARECERA EN LA APLICACION",
+      "torrent_path": "NOMBREDELTORRENT.torrent",
+      "carpeta_destino": "/CARPETA/DE/DESTINO"
+    },
+
+O en caso de utilizar un magnet:
+
+    {
+      "nombre": "NOMBRE QUE APARECERA EN LA APLICACION",
+      "magnet": "magnet:?xt=urn:btih:REEMPLAZAR_CON_HASH_REAL",
+      "carpeta_destino": "/CARPETA/DE/DESTINO"
+    },
+
+Tal que el archivo quede asi por ejemplo:
+
+
+{
+  "opciones": [
+    {
+      "nombre": "Perros",
+      "magnet": "magnet:?xt=urn:btih:REEMPLAZAR_CON_HASH_REAL",
+      "carpeta_destino": "/roms/ports/downloads"
+    },
+    {
+      "nombre": "Gatos",
+      "torrent_path": "gatos.torrent",
+      "carpeta_destino": "/roms/gatos"
+    },
+    {
+      "nombre": "Aves",
+      "magnet": "magnet:?xt=urn:btih:REEMPLAZAR_CON_HASH_REAL",
+      "carpeta_destino": "/roms/ports/R36ARIA/temp_downloads"
+    },
+    {
+      "nombre": "Fotos",
+      "torrent_path": "fotos.torrent",
+      "carpeta_destino": "/roms/nes"
+    }
+  ]
+}
+
+Con el archivo asi, cuando entremos nos quedaria un menu principal con 4 opciones: Perros, Gatos, Aves y Fotos
+
+Al seleccionar Perros, entraremos al torrent mediante el magnet que hayamos colocado, y todo lo que descarguemos de ahi ira a parar a la carpeta downloads dentro de la carpeta ports, dentro de nuestra particion de roms.
+Al seleccionar Gatos, entraremos al torrent mediante el archivo gatos.torrent que hayamos dejado en la carpeta torrents, y todo lo que descarguemos de ahi ira a parar a la carpeta gatos, dentro de nuestra particion de roms.
+Al seleccionar Aves, entraremos mediante magnet, y lo que descarguemos ahi ira a la carpeta temp_downloads, dentro de la carpeta de la aplicacion.
+Al seleccionar Fotos, entraremos mediante fotos.torrent que hayamos dejado en la carpeta torrents, y lo que descarguemos ira a la carpeta nes, de nuestra particion de roms.
+
+Cualquier duda comentenme gente, un saludo.

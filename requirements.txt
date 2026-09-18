@@ -1,0 +1,4 @@
+# Este archivo es solo para desarrollo/pruebas en la PC.
+# En la consola, pygame y requests se empaquetan en vendor.
+pygame
+requests

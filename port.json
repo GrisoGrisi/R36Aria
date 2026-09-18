@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "name": "R36ARIA.zip",
+  "items": [
+    "R36ARIA.sh",
+    "R36ARIA"
+  ],
+  "items_opt": null,
+  "attr": {
+    "title": "R36ARIA",
+    "desc": "Interfaz para descargar archivos individuales desde magnets predefinidos por categoria, usando aria2.",
+    "inst": "Configura tus .torrents y magnets en R36ARIA/config/options.json.",
+    "genres": [
+      "utility"
+    ],
+    "porter": [
+      "Griso"
+    ],
+    "image": {},
+    "rtr": false,
+    "runtime": null,
+    "reqs": [],
+    "arch": [
+      "aarch64"
+    ]
+  }
+}

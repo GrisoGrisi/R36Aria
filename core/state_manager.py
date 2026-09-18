@@ -1,0 +1,103 @@
+"""
+Estado global de la aplicacion y nombres de pantalla.
+Se mantiene como un dict mutable simple, accedido por todos los modulos de ui/.
+"""
+
+import time
+
+# --- Nombres de pantalla / estados de la maquina de estados ---
+MENU_PRINCIPAL = "MENU_PRINCIPAL"
+RESOLVIENDO_METADATA = "RESOLVIENDO_METADATA"
+LISTA_ARCHIVOS = "LISTA_ARCHIVOS"
+DESCARGANDO = "DESCARGANDO"
+ELEGIR_ACCION_ARCHIVO = "ELEGIR_ACCION_ARCHIVO"
+EXTRAYENDO = "EXTRAYENDO"
+DESCARGA_COMPLETA = "DESCARGA_COMPLETA"
+CONFIRMAR_CANCELAR = "CONFIRMAR_CANCELAR"
+ERROR_POPUP = "ERROR_POPUP"
+
+# --- Timeouts configurables ---
+TIMEOUT_METADATA = 90          # segundos totales esperando resolver el magnet
+                                # (los magnets sin buenos trackers/DHT pueden
+                                # tardar bastante; los .torrent locales no
+                                # usan este timeout, ya tienen la metadata)
+TIMEOUT_INACTIVIDAD_DESCARGA = 20   # segundos sin progreso en la descarga
+
+FILAS_TECLADO = [
+    list("1234567890"),
+    list("QWERTYUIOP"),
+    list("ASDFGHJKL"),
+    list("ZXCVBNM"),
+    [" "],  # barra espaciadora: fila de un solo "boton" que ocupa todo el ancho
+]
+
+
+def estado_inicial():
+    return {
+        "pantalla": MENU_PRINCIPAL,
+        "pantalla_anterior": MENU_PRINCIPAL,
+
+        # Menu principal
+        "opciones_menu": [],
+        "indice_menu": 0,
+
+        # Resolucion de metadata / archivos del torrent
+        "opcion_actual": None,
+        "gid": None,
+        "inicio_resolucion": 0.0,
+        "archivos": [],
+
+        # Lista de archivos (seleccion unica)
+        "indice_cursor": 0,
+        "indice_elegido": None,   # guarda el "index" real de aria2, no la posicion en la lista
+
+        # Busqueda / teclado
+        "buscando": False,
+        "texto_busqueda": "",
+        "fila_teclado": 0,
+        "col_teclado": 0,
+
+        # Descarga
+        "progreso": 0.0,
+        "ultimo_completado": 0,
+        "ultimo_avance_ts": 0.0,
+        "ruta_descargada": "",
+        "accion_archivo_indice": 0,  # 0=mantener, 1=extraer y borrar, 2=extraer y mantener
+
+        # Extraccion
+        "extractor": None,  # instancia de ExtractorIncremental mientras se extrae
+        "progreso_extraccion": 0.0,
+        "borrar_comprimido_al_terminar": False,
+
+        # Confirmar cancelar
+        "confirmar_indice": 1,  # 0 = Si, 1 = No (arranca en No por seguridad)
+
+        # Error popup
+        "mensaje_error": "",
+    }
+
+
+estado = estado_inicial()
+
+
+def resetear_para_menu():
+    """Vuelve al menu principal limpiando todo lo relativo a una opcion elegida."""
+    estado["pantalla"] = MENU_PRINCIPAL
+    estado["opcion_actual"] = None
+    estado["gid"] = None
+    estado["archivos"] = []
+    estado["indice_cursor"] = 0
+    estado["indice_elegido"] = None
+    estado["buscando"] = False
+    estado["texto_busqueda"] = ""
+    estado["progreso"] = 0.0
+    estado["ruta_descargada"] = ""
+    estado["accion_archivo_indice"] = 0
+    if estado.get("extractor") is not None:
+        try:
+            estado["extractor"].cerrar()
+        except Exception:
+            pass
+    estado["extractor"] = None
+    estado["progreso_extraccion"] = 0.0
+    estado["borrar_comprimido_al_terminar"] = False
