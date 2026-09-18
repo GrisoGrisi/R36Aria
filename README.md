@@ -15,7 +15,10 @@ Just drag and drop .torrent files on the /torrents folder and edit /config/optio
 # EXAMPLE:
 
 {
-  "opciones": [
+
+  "opciones":
+  [
+    
     {
       "nombre": "Example 1",
       "magnet": "magnet:?xt=urn:btih:REPLACE_WITH_REAL_HASH",
@@ -31,7 +34,9 @@ Just drag and drop .torrent files on the /torrents folder and edit /config/optio
       "torrent_path": "/roms/torrents/example.torrent",
       "carpeta_destino": "/roms/downloaded_file_examples"
     }
+    
   ]
+  
 }
 
 This is all vibe coded btw, im trying to learn coding, this project helped me a lot to understand how python and git works, please don´t be too harsh lol.
