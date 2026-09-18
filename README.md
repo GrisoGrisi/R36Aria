@@ -58,7 +58,9 @@ SELECT: Open or close the search bar.
 SELECT + START: Close the app.
 
 
+
 Search bar controls:
+
 
 
 A: Type the selected letter.
