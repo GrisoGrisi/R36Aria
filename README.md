@@ -46,19 +46,31 @@ Just drag and drop .torrent files on the /torrents folder and edit /config/optio
 # CONTROLS:
 
 D-Pad: Navigate through the different options.
+
 A: Select an option - Select a file to download.
+
 B: Return to the main menu.
+
 X: Start download.
+
 SELECT: Open or close the search bar.
+
 SELECT + START: Close the app.
+
 
 Search bar controls:
 
+
 A: Type the selected letter.
+
 Y: Delete the last character.
+
 X: Insert a space.
+
 B: Clear the search bar and close the on-screen keyboard.
+
 SELECT or START: Close the search bar with the filter applied.
+
 
 
 
