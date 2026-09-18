@@ -3,13 +3,13 @@ Torrenting client UI for R36S consoles, using Aria2 client as a base made by the
 
 Just drag and drop .torrent files on the /torrents folder and edit /config/options.json to add them to the ui:
 
-"nombre": Name that will appear on the main menu of the app.
+- "nombre": Name that will appear on the main menu of the app.
 
-"magnet": Magnet link in case you want to use a magnet instead of a .torrent file.
+- "magnet": Magnet link in case you want to use a magnet instead of a .torrent file.
 
-"torrent_path": Path to the .torrent file, just add the .torrent file name, or a absolute path like /roms/torrents/example.torrent in case you want to store the .torrent files anywhere else.
+- "torrent_path": Path to the .torrent file, just add the .torrent file name, or a absolute path like /roms/torrents/example.torrent in case you want to store the .torrent files anywhere else.
 
-"carpeta_destino": Path where the downloaded files will be saved.
+- "carpeta_destino": Path where the downloaded files will be saved.
 
 
 # EXAMPLE:
