@@ -42,6 +42,7 @@ Just drag and drop .torrent files on the /torrents folder and edit /config/optio
 
 ```
 This is all vibe coded btw, im trying to learn coding, this project helped me a lot to understand how python and git works, please don´t be too harsh lol.
+
 You can use this project to do whathever you want if it helps you. 
 
 # Aria2 was made by Tatsuhiro Tsujikawa.
