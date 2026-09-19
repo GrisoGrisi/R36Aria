@@ -92,8 +92,9 @@ The extracted contents will be stored in the same folder, not in a subfolder.
 This is all vibe coded btw, im still learning coding, this project helped me a lot to understand how OOP, python and git works, please don´t be too harsh lol.
 
 You can use this project to do whathever you want if it helps you. 
-
 This project was tested on dArkOSRE-R36 03082026, on a genuine R36S-V22 2024-12-18
+
+*Feel free to add issues with suggestions.*
 
 # Aria2 was made by Tatsuhiro Tsujikawa.
 https://aria2.github.io/
