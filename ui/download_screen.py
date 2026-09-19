@@ -127,6 +127,11 @@ def dibujar_descargando(pantalla):
     pygame.draw.rect(pantalla, theme.COLOR_ACENTO, (x, y, ancho_relleno, alto_barra), border_radius=6)
     pygame.draw.rect(pantalla, (80, 80, 90), (x, y, ancho_barra, alto_barra), width=2, border_radius=6)
 
+    cantidad = len(estado["indices_elegidos"])
+    texto_cantidad = f"{cantidad} archivo" + ("" if cantidad == 1 else "s")
+    render_cantidad = theme.fuente_footer.render(texto_cantidad, True, theme.COLOR_TEXTO_APAGADO)
+    pantalla.blit(render_cantidad, render_cantidad.get_rect(center=(theme.ANCHO // 2, y - 48)))
+
     porcentaje = theme.fuente_item.render(f"{int(estado['progreso'] * 100)}%", True, (255, 255, 255))
     pantalla.blit(porcentaje, porcentaje.get_rect(center=(theme.ANCHO // 2, y - 24)))
 
