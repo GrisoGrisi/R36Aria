@@ -46,10 +46,14 @@ def manejar_input_lista_archivos(event):
         if event.button == BOTON_A:
             if archivos_filtrados:
                 archivo = archivos_filtrados[estado["indice_cursor"]]
-                estado["indice_elegido"] = archivo["index"]  # index real de aria2, no posicion
+                idx = archivo["index"]  # index real de aria2, no posicion en la lista
+                if idx in estado["indices_elegidos"]:
+                    estado["indices_elegidos"].discard(idx)
+                else:
+                    estado["indices_elegidos"].add(idx)
 
         elif event.button == BOTON_X:
-            if estado["indice_elegido"] is not None:
+            if estado["indices_elegidos"]:
                 _entrar_descargando()
 
         elif event.button == BOTON_B:
@@ -57,7 +61,7 @@ def manejar_input_lista_archivos(event):
 
 
 def _entrar_descargando():
-    aria2_client.iniciar_descarga_archivo(estado["gid"], estado["indice_elegido"])
+    aria2_client.iniciar_descarga_archivos(estado["gid"], estado["indices_elegidos"])
     estado["ultimo_completado"] = 0
     estado["ultimo_avance_ts"] = pygame.time.get_ticks() / 1000.0
     estado["progreso"] = 0.0
@@ -79,7 +83,7 @@ def dibujar_lista_archivos(pantalla):
         y = theme.Y_INICIO_LISTA + i * theme.ALTURA_ITEM
 
         es_cursor = idx_real_lista == estado["indice_cursor"]
-        es_elegido = archivo["index"] == estado["indice_elegido"]
+        es_elegido = archivo["index"] in estado["indices_elegidos"]
 
         if es_cursor:
             pygame.draw.rect(pantalla, theme.COLOR_CURSOR,
@@ -98,7 +102,9 @@ def dibujar_lista_archivos(pantalla):
         texto = theme.fuente_item.render("Sin resultados", True, theme.COLOR_TEXTO_APAGADO)
         pantalla.blit(texto, texto.get_rect(center=(theme.ANCHO // 2, theme.ALTO // 2)))
 
-    theme.dibujar_footer(pantalla, "A: Elegir  X: Descargar  SELECT: Buscar  B: Volver")
+    cantidad = len(estado["indices_elegidos"])
+    sufijo_cantidad = f" ({cantidad})" if cantidad else ""
+    theme.dibujar_footer(pantalla, f"A: Marcar{sufijo_cantidad}  X: Descargar  SELECT: Buscar  B: Volver")
 
     if estado["buscando"]:
         dibujar_overlay_busqueda(pantalla)

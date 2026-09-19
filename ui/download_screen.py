@@ -78,7 +78,7 @@ def actualizar_descargando():
     # versiones/config de aria2) aun cuando el archivo ya esta completo.
     if status == "complete" or progreso >= 1.0:
         _finalizar_descarga()
-        if archivos.es_comprimido_soportado(estado["ruta_descargada"]):
+        if any(archivos.es_comprimido_soportado(r) for r in estado["rutas_descargadas"]):
             estado["accion_archivo_indice"] = 0
             estado["pantalla"] = ELEGIR_ACCION_ARCHIVO
         else:
@@ -91,35 +91,24 @@ def actualizar_descargando():
 
 
 def _finalizar_descarga():
-    """Mueve el archivo desde la carpeta temporal a la carpeta_destino real
-    configurada para esta opcion, tomando solo ese archivo (sin
-    subcarpetas del torrent), y guarda la ruta final para mostrarla."""
-    ruta_temporal = _obtener_ruta_descargada(estado["gid"])
+    """Mueve todos los archivos descargados en esta tanda desde la carpeta
+    temporal a la carpeta_destino real configurada para esta opcion, cada
+    uno tomando solo ese archivo (sin subcarpetas del torrent), y guarda
+    las rutas finales para mostrarlas."""
+    rutas_temporales = aria2_client.rutas_seleccionadas(estado["gid"])
     carpeta_destino = estado["opcion_actual"]["carpeta_destino"]
 
-    try:
-        ruta_final = aria2_client.mover_a_destino_final(ruta_temporal, carpeta_destino)
-    except Exception as e:
-        print(f"[R36ARIA] Error moviendo el archivo a destino final: {e}")
-        ruta_final = ruta_temporal  # al menos mostramos donde quedo de verdad
+    rutas_finales = []
+    for ruta_temporal in rutas_temporales:
+        try:
+            ruta_final = aria2_client.mover_a_destino_final(ruta_temporal, carpeta_destino)
+        except Exception as e:
+            print(f"[R36ARIA] Error moviendo '{ruta_temporal}' a destino final: {e}")
+            ruta_final = ruta_temporal  # al menos mostramos donde quedo de verdad
+        rutas_finales.append(ruta_final)
 
-    estado["ruta_descargada"] = ruta_final
-    print(f"[R36ARIA] Descarga completa, ruta final: {ruta_final}")
-
-
-def _obtener_ruta_descargada(gid):
-    """Vuelve a consultar los archivos del gid (ya con la descarga terminada)
-    para obtener la ruta real y definitiva del archivo que se selecciono,
-    en vez de confiar en el path que se mostro antes de empezar (ese se
-    calculo con la carpeta temporal original, antes de cambiar el 'dir')."""
-    try:
-        archivos = aria2_client.obtener_archivos(gid)
-        for archivo in archivos:
-            if archivo.get("selected") == "true":
-                return archivo["path"]
-    except Exception as e:
-        print(f"[R36ARIA] No se pudo obtener la ruta final: {e}")
-    return "(no se pudo determinar la ruta)"
+    estado["rutas_descargadas"] = rutas_finales
+    print(f"[R36ARIA] Descarga completa, {len(rutas_finales)} archivo(s): {rutas_finales}")
 
 
 def dibujar_descargando(pantalla):
@@ -170,26 +159,43 @@ def dibujar_descarga_completa(pantalla):
     nombre = estado["opcion_actual"]["nombre"] if estado["opcion_actual"] else ""
     theme.dibujar_header(pantalla, nombre)
 
-    ruta = estado.get("ruta_descargada", "")
+    rutas = estado.get("rutas_descargadas", [])
+    carpeta_destino = estado["opcion_actual"]["carpeta_destino"] if estado["opcion_actual"] else ""
+
     fuente_ruta = theme.fuente_footer
     max_ancho_texto = theme.ANCHO - 60
-    lineas_ruta = _envolver_texto(ruta, fuente_ruta, max_ancho_texto)
+
+    lineas = [f"Guardado en: {carpeta_destino}"]
+    lineas.extend(os.path.basename(r) for r in rutas)
+
+    lineas_envueltas = []
+    for linea in lineas:
+        lineas_envueltas.extend(_envolver_texto(linea, fuente_ruta, max_ancho_texto))
 
     alto_linea = 20
-    alto_caja = 60 + len(lineas_ruta) * alto_linea + 15
+    alto_disponible = theme.ALTO - theme.ALTO_HEADER - theme.ALTO_FOOTER - 90
+    max_lineas = max(1, alto_disponible // alto_linea)
+    if len(lineas_envueltas) > max_lineas:
+        lineas_mostradas = lineas_envueltas[: max_lineas - 1]
+        lineas_mostradas.append(f"... y {len(lineas_envueltas) - (max_lineas - 1)} mas")
+    else:
+        lineas_mostradas = lineas_envueltas
+
+    alto_caja = 60 + len(lineas_mostradas) * alto_linea + 15
     top_caja = theme.ALTO // 2 - alto_caja // 2
-    # Que no se meta debajo del header ni encima del footer
     top_caja = max(theme.ALTO_HEADER + 10, top_caja)
     alto_caja = min(alto_caja, theme.ALTO - theme.ALTO_FOOTER - 10 - top_caja)
     caja = pygame.Rect(20, top_caja, theme.ANCHO - 40, alto_caja)
     pygame.draw.rect(pantalla, (30, 30, 30), caja, border_radius=10)
     pygame.draw.rect(pantalla, theme.COLOR_OK, caja, width=2, border_radius=10)
 
-    texto = theme.fuente_titulo.render("Descarga completa", True, (255, 255, 255))
+    cantidad = len(rutas)
+    titulo = f"Descarga completa ({cantidad} archivos)" if cantidad > 1 else "Descarga completa"
+    texto = theme.fuente_titulo.render(titulo, True, (255, 255, 255))
     pantalla.blit(texto, texto.get_rect(centerx=caja.centerx, top=caja.top + 15))
 
     y = caja.top + 55
-    for linea in lineas_ruta:
+    for linea in lineas_mostradas:
         texto_linea = fuente_ruta.render(linea, True, theme.COLOR_TEXTO_APAGADO)
         pantalla.blit(texto_linea, texto_linea.get_rect(centerx=caja.centerx, top=y))
         y += alto_linea

@@ -151,13 +151,15 @@ def obtener_archivos(gid):
     return resp["result"]
 
 
-def iniciar_descarga_archivo(gid, index_elegido):
-    """Selecciona solo el archivo elegido dentro del torrent y arranca la
+def iniciar_descarga_archivos(gid, indices_elegidos):
+    """Selecciona uno o varios archivos dentro del torrent (aria2 acepta
+    una lista de indices separados por coma en select-file) y arranca la
     descarga. Siempre se descarga a la carpeta temporal del proceso --
     cambiar 'dir' a mitad de una descarga BitTorrent ya agregada no
     siempre se respeta de forma confiable en aria2. Una vez terminada, se
     mueve a la carpeta_destino real con mover_a_destino_final()."""
-    rpc_call("aria2.changeOption", [gid, {"select-file": str(index_elegido)}])
+    indices_str = ",".join(str(i) for i in sorted(indices_elegidos))
+    rpc_call("aria2.changeOption", [gid, {"select-file": indices_str}])
     rpc_call("aria2.unpause", [gid])
 
 

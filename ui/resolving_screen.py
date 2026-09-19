@@ -25,7 +25,7 @@ def actualizar_resolviendo_metadata():
         estado["gid"] = gid_real
         estado["archivos"] = aria2_client.obtener_archivos(gid_real)
         estado["indice_cursor"] = 0
-        estado["indice_elegido"] = None
+        estado["indices_elegidos"] = set()
         estado["pantalla"] = LISTA_ARCHIVOS
         return
 

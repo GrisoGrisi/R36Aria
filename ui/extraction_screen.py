@@ -37,19 +37,35 @@ def _ejecutar_accion_elegida():
         estado["pantalla"] = DESCARGA_COMPLETA
         return
 
-    ruta = estado["ruta_descargada"]
-    carpeta_destino = os.path.dirname(ruta)  # el comprimido se extrae en su misma carpeta
+    cola = [r for r in estado["rutas_descargadas"] if archivos.es_comprimido_soportado(r)]
+    if not cola:
+        estado["pantalla"] = DESCARGA_COMPLETA
+        return
 
+    estado["cola_extraccion"] = cola
+    estado["indice_extraccion_actual"] = 0
+    estado["total_extraccion"] = len(cola)
+    estado["borrar_comprimido_al_terminar"] = (idx == 1)
+    estado["progreso_extraccion"] = 0.0
+
+    if not _iniciar_extractor_actual():
+        return
+
+    estado["pantalla"] = EXTRAYENDO
+
+
+def _iniciar_extractor_actual():
+    """Arranca el ExtractorIncremental para el comprimido actual de la
+    cola. Devuelve False (y muestra el error) si fallo."""
+    ruta = estado["cola_extraccion"][estado["indice_extraccion_actual"]]
+    carpeta_destino = os.path.dirname(ruta)  # el comprimido se extrae en su misma carpeta
     try:
         estado["extractor"] = archivos.ExtractorIncremental(ruta, carpeta_destino)
+        return True
     except Exception as e:
         print(f"[R36ARIA] Error al iniciar la extraccion de '{ruta}': {e}")
         mostrar_error_popup("No se pudo extraer el archivo", MENU_PRINCIPAL)
-        return
-
-    estado["progreso_extraccion"] = 0.0
-    estado["borrar_comprimido_al_terminar"] = (idx == 1)
-    estado["pantalla"] = EXTRAYENDO
+        return False
 
 
 def dibujar_eleccion_archivo(pantalla):
@@ -83,14 +99,16 @@ def dibujar_eleccion_archivo(pantalla):
 def actualizar_extrayendo():
     """Se llama una vez por frame mientras estado['pantalla'] == EXTRAYENDO.
     Cada llamada procesa un bloque acotado (ver BYTES_POR_PASO), asi que
-    no bloquea el loop principal aunque el comprimido sea grande."""
+    no bloquea el loop principal aunque el comprimido sea grande. Cuando
+    termina un comprimido de la cola, sigue automaticamente con el
+    siguiente (si el usuario marco varios comprimidos en la descarga)."""
     extractor = estado["extractor"]
     if extractor is None:
         estado["pantalla"] = DESCARGA_COMPLETA
         return
 
     try:
-        termino = extractor.paso()
+        termino_este = extractor.paso()
     except Exception as e:
         print(f"[R36ARIA] Error durante la extraccion: {e}")
         extractor.cerrar()
@@ -101,28 +119,49 @@ def actualizar_extrayendo():
     if extractor.bytes_totales:
         estado["progreso_extraccion"] = extractor.bytes_hechos / extractor.bytes_totales
     else:
-        estado["progreso_extraccion"] = 1.0 if termino else 0.0
+        estado["progreso_extraccion"] = 1.0 if termino_este else 0.0
 
-    if termino:
-        ruta_comprimido = estado["ruta_descargada"]
-        if estado["borrar_comprimido_al_terminar"]:
-            try:
-                os.remove(ruta_comprimido)
-            except OSError as e:
-                print(f"[R36ARIA] No se pudo borrar el comprimido original: {e}")
+    if not termino_este:
+        return
 
-        estado["extractor"] = None
+    ruta_comprimido = estado["cola_extraccion"][estado["indice_extraccion_actual"]]
+    if estado["borrar_comprimido_al_terminar"]:
+        try:
+            os.remove(ruta_comprimido)
+        except OSError as e:
+            print(f"[R36ARIA] No se pudo borrar el comprimido original: {e}")
+
+    estado["extractor"] = None
+    estado["indice_extraccion_actual"] += 1
+
+    if estado["indice_extraccion_actual"] >= len(estado["cola_extraccion"]):
         estado["pantalla"] = DESCARGA_COMPLETA
+        return
+
+    estado["progreso_extraccion"] = 0.0
+    _iniciar_extractor_actual()
 
 
 def dibujar_extrayendo(pantalla):
     pantalla.fill(theme.COLOR_FONDO)
-    theme.dibujar_header(pantalla, "Extrayendo...")
+    total = estado.get("total_extraccion", 1) or 1
+    actual = estado.get("indice_extraccion_actual", 0) + 1
+    titulo = f"Extrayendo... ({actual}/{total})" if total > 1 else "Extrayendo..."
+    theme.dibujar_header(pantalla, titulo)
+
+    nombre_actual = ""
+    cola = estado.get("cola_extraccion", [])
+    if cola and estado["indice_extraccion_actual"] < len(cola):
+        nombre_actual = os.path.basename(cola[estado["indice_extraccion_actual"]])
 
     ancho_barra = theme.ANCHO - 80
     alto_barra = 30
     x = 40
     y = theme.ALTO // 2 - alto_barra // 2
+
+    if nombre_actual:
+        texto_nombre = theme.fuente_footer.render(nombre_actual, True, theme.COLOR_TEXTO_APAGADO)
+        pantalla.blit(texto_nombre, texto_nombre.get_rect(center=(theme.ANCHO // 2, y - 46)))
 
     pygame.draw.rect(pantalla, (40, 40, 50), (x, y, ancho_barra, alto_barra), border_radius=6)
     ancho_relleno = int(ancho_barra * estado["progreso_extraccion"])

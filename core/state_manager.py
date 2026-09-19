@@ -47,9 +47,9 @@ def estado_inicial():
         "inicio_resolucion": 0.0,
         "archivos": [],
 
-        # Lista de archivos (seleccion unica)
+        # Lista de archivos (seleccion multiple)
         "indice_cursor": 0,
-        "indice_elegido": None,   # guarda el "index" real de aria2, no la posicion en la lista
+        "indices_elegidos": set(),   # guarda los "index" reales de aria2 (no posiciones en la lista) marcados para descargar
 
         # Busqueda / teclado
         "buscando": False,
@@ -61,13 +61,16 @@ def estado_inicial():
         "progreso": 0.0,
         "ultimo_completado": 0,
         "ultimo_avance_ts": 0.0,
-        "ruta_descargada": "",
+        "rutas_descargadas": [],   # rutas finales (ya movidas) de todos los archivos descargados en esta tanda
         "accion_archivo_indice": 0,  # 0=mantener, 1=extraer y borrar, 2=extraer y mantener
 
-        # Extraccion
+        # Extraccion (puede haber varios comprimidos en la cola, se procesan de a uno)
         "extractor": None,  # instancia de ExtractorIncremental mientras se extrae
         "progreso_extraccion": 0.0,
         "borrar_comprimido_al_terminar": False,
+        "cola_extraccion": [],        # rutas pendientes de extraer (subconjunto de rutas_descargadas)
+        "indice_extraccion_actual": 0,
+        "total_extraccion": 0,
 
         # Confirmar cancelar
         "confirmar_indice": 1,  # 0 = Si, 1 = No (arranca en No por seguridad)
@@ -87,11 +90,11 @@ def resetear_para_menu():
     estado["gid"] = None
     estado["archivos"] = []
     estado["indice_cursor"] = 0
-    estado["indice_elegido"] = None
+    estado["indices_elegidos"] = set()
     estado["buscando"] = False
     estado["texto_busqueda"] = ""
     estado["progreso"] = 0.0
-    estado["ruta_descargada"] = ""
+    estado["rutas_descargadas"] = []
     estado["accion_archivo_indice"] = 0
     if estado.get("extractor") is not None:
         try:
@@ -101,3 +104,6 @@ def resetear_para_menu():
     estado["extractor"] = None
     estado["progreso_extraccion"] = 0.0
     estado["borrar_comprimido_al_terminar"] = False
+    estado["cola_extraccion"] = []
+    estado["indice_extraccion_actual"] = 0
+    estado["total_extraccion"] = 0

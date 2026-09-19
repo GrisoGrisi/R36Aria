@@ -60,7 +60,7 @@ def _entrar_con_torrent_local(opcion_elegida):
     estado["opcion_actual"] = opcion_elegida
     estado["archivos"] = aria2_client.obtener_archivos(gid)
     estado["indice_cursor"] = 0
-    estado["indice_elegido"] = None
+    estado["indices_elegidos"] = set()
     estado["pantalla"] = LISTA_ARCHIVOS
 
 
