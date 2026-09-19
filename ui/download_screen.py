@@ -128,7 +128,7 @@ def dibujar_descargando(pantalla):
     pygame.draw.rect(pantalla, (80, 80, 90), (x, y, ancho_barra, alto_barra), width=2, border_radius=6)
 
     cantidad = len(estado["indices_elegidos"])
-    texto_cantidad = f"{cantidad} archivo" + ("" if cantidad == 1 else "s")
+    texto_cantidad = f"{cantidad} archivo" + ("" if cantidad == 1 else "s") + f" - {nombre}"
     render_cantidad = theme.fuente_footer.render(texto_cantidad, True, theme.COLOR_TEXTO_APAGADO)
     pantalla.blit(render_cantidad, render_cantidad.get_rect(center=(theme.ANCHO // 2, y - 48)))
 
