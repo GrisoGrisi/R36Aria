@@ -61,12 +61,15 @@ def obtener_direccion_input(event):
 # y luego a intervalos regulares mas cortos.
 # ----------------------------------------------------------------------
 RETRASO_INICIAL = 0.35       # segundos antes del primer repeat
-INTERVALO_REPETICION = 0.10  # segundos entre repeats sucesivos
+INTERVALO_REPETICION = 0.10  # segundos entre repeats sucesivos (velocidad normal)
+UMBRAL_ACELERACION = 2.0     # segundos sosteniendo antes de acelerar
+INTERVALO_ACELERADO = 0.03   # segundos entre repeats una vez acelerado
 
 _repeticion = {
-    "direccion": None,  # (dx, dy) actualmente sostenida, o None
-    "boton": None,       # boton fisico que la origino (para detectar cuando se suelta)
+    "direccion": None,   # (dx, dy) actualmente sostenida, o None
+    "boton": None,        # boton fisico que la origino (para detectar cuando se suelta)
     "proximo_tick": 0.0,
+    "inicio_sostenido": 0.0,  # momento en que se empezo a sostener esta direccion
 }
 
 
@@ -82,9 +85,11 @@ def registrar_evento_direccion(event):
     if event.type == pygame.JOYBUTTONDOWN and event.button in (
         BOTON_DPAD_UP, BOTON_DPAD_DOWN, BOTON_DPAD_LEFT, BOTON_DPAD_RIGHT
     ):
+        ahora = _tiempo_actual()
         _repeticion["direccion"] = obtener_direccion_input(event)
         _repeticion["boton"] = event.button
-        _repeticion["proximo_tick"] = _tiempo_actual() + RETRASO_INICIAL
+        _repeticion["proximo_tick"] = ahora + RETRASO_INICIAL
+        _repeticion["inicio_sostenido"] = ahora
 
     elif event.type == pygame.JOYBUTTONUP and event.button == _repeticion["boton"]:
         _repeticion["direccion"] = None
@@ -96,21 +101,27 @@ def registrar_evento_direccion(event):
             _repeticion["direccion"] = None
             _repeticion["boton"] = None
         else:
+            ahora = _tiempo_actual()
             _repeticion["direccion"] = (x, y)
             _repeticion["boton"] = None
-            _repeticion["proximo_tick"] = _tiempo_actual() + RETRASO_INICIAL
+            _repeticion["proximo_tick"] = ahora + RETRASO_INICIAL
+            _repeticion["inicio_sostenido"] = ahora
 
 
 def verificar_repeticion():
     """Llamar una vez por frame. Si hay una direccion sostenida y ya paso
     el tiempo de espera correspondiente, devuelve esa direccion (y
-    programa el siguiente repeat). Si no, devuelve None."""
+    programa el siguiente repeat). Pasado UMBRAL_ACELERACION segundos
+    sosteniendo la misma direccion, los repeats pasan a ser mas seguidos
+    (INTERVALO_ACELERADO) para poder recorrer listas largas mas rapido."""
     direccion = _repeticion["direccion"]
     if direccion is None:
         return None
     ahora = _tiempo_actual()
     if ahora >= _repeticion["proximo_tick"]:
-        _repeticion["proximo_tick"] = ahora + INTERVALO_REPETICION
+        sosteniendo_desde = ahora - _repeticion["inicio_sostenido"]
+        intervalo = INTERVALO_ACELERADO if sosteniendo_desde >= UMBRAL_ACELERACION else INTERVALO_REPETICION
+        _repeticion["proximo_tick"] = ahora + intervalo
         return direccion
     return None
 
