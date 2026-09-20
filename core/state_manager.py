@@ -68,6 +68,7 @@ def estado_inicial():
         "texto_busqueda": "",
         "fila_teclado": 0,
         "col_teclado": 0,
+        "mayusculas": True,  # alternable con L en el teclado virtual
 
         # Descarga
         "progreso": 0.0,

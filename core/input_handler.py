@@ -19,6 +19,7 @@ BOTON_X = 2
 BOTON_Y = 3
 BOTON_SELECT = 12
 BOTON_START = 13
+BOTON_L = 4  # gatillo/hombro izquierdo -- se usa como alternador mayus/minus en el teclado virtual
 
 # Algunos mandos (como el de este dispositivo) reportan la cruceta como
 # botones sueltos en vez de un "hat" -- ver core/input_handler.py al
