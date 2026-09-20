@@ -63,21 +63,7 @@ def _clamp_cursor():
     estado["indice_cursor"] = min(estado["indice_cursor"], max(0, len(filtrados) - 1))
 
 
-def dibujar_overlay_busqueda(pantalla):
-    overlay = pygame.Surface(pantalla.get_size(), pygame.SRCALPHA)
-    overlay.fill((0, 0, 0, 190))
-    pantalla.blit(overlay, (0, 0))
-
-    caja_texto = pygame.Rect(30, 20, theme.ANCHO - 60, 34)
-    pygame.draw.rect(pantalla, (30, 30, 30), caja_texto, border_radius=6)
-    pygame.draw.rect(pantalla, theme.COLOR_ACENTO, caja_texto, width=2, border_radius=6)
-
-    texto_mostrado = estado["texto_busqueda"] or "Buscar..."
-    color = (255, 255, 255) if estado["texto_busqueda"] else theme.COLOR_TEXTO_APAGADO
-    texto = theme.fuente_item.render(texto_mostrado, True, color)
-    pantalla.blit(texto, (caja_texto.x + 10, caja_texto.y + 6))
-
-    y_inicio = 70
+def dibujar_grilla_teclado(pantalla, y_inicio):
     alto_tecla = 34
     for fi, fila in enumerate(FILAS_TECLADO):
         ancho_tecla = (theme.ANCHO - 40) // len(fila)
@@ -93,6 +79,23 @@ def dibujar_overlay_busqueda(pantalla):
             txt_mostrado = "ESPACIO" if letra == " " else letra
             txt = theme.fuente_item.render(txt_mostrado, True, (255, 255, 255))
             pantalla.blit(txt, txt.get_rect(center=rect.center))
+
+
+def dibujar_overlay_busqueda(pantalla):
+    overlay = pygame.Surface(pantalla.get_size(), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 190))
+    pantalla.blit(overlay, (0, 0))
+
+    caja_texto = pygame.Rect(30, 20, theme.ANCHO - 60, 34)
+    pygame.draw.rect(pantalla, (30, 30, 30), caja_texto, border_radius=6)
+    pygame.draw.rect(pantalla, theme.COLOR_ACENTO, caja_texto, width=2, border_radius=6)
+
+    texto_mostrado = estado["texto_busqueda"] or "Buscar..."
+    color = (255, 255, 255) if estado["texto_busqueda"] else theme.COLOR_TEXTO_APAGADO
+    texto = theme.fuente_item.render(texto_mostrado, True, color)
+    pantalla.blit(texto, (caja_texto.x + 10, caja_texto.y + 6))
+
+    dibujar_grilla_teclado(pantalla, 70)
 
     ayuda = theme.fuente_footer.render(
         "A: Escribir  Y: Borrar  X: Espacio  START: Cerrar  B: Cancelar",
