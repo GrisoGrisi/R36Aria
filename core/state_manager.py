@@ -14,6 +14,8 @@ ELEGIR_ACCION_ARCHIVO = "ELEGIR_ACCION_ARCHIVO"
 EXTRAYENDO = "EXTRAYENDO"
 DESCARGA_COMPLETA = "DESCARGA_COMPLETA"
 CONFIRMAR_CANCELAR = "CONFIRMAR_CANCELAR"
+NUEVOS_TORRENTS_LISTA = "NUEVOS_TORRENTS_LISTA"
+ENTRADA_TEXTO = "ENTRADA_TEXTO"
 ERROR_POPUP = "ERROR_POPUP"
 
 # --- Timeouts configurables ---
@@ -28,6 +30,7 @@ FILAS_TECLADO = [
     list("QWERTYUIOP"),
     list("ASDFGHJKL"),
     list("ZXCVBNM"),
+    list("/-_."),  # simbolos utiles para escribir rutas de carpetas
     [" "],  # barra espaciadora: fila de un solo "boton" que ocupa todo el ancho
 ]
 
@@ -38,8 +41,17 @@ def estado_inicial():
         "pantalla_anterior": MENU_PRINCIPAL,
 
         # Menu principal
+        "opciones_categorias": [],  # las categorias "reales" (sin las entradas especiales de Agregar/Salir), es lo que se persiste
         "opciones_menu": [],
         "indice_menu": 0,
+
+        # Agregar torrents nuevos
+        "torrents_nuevos_encontrados": [],
+        "torrents_nuevos_indice_cursor": 0,
+        "torrent_actual_nuevo": "",
+        "nuevo_torrent_nombre": "",
+        "modo_entrada_texto": "nombre",  # "nombre" o "destino"
+        "valor_entrada_texto": "",
 
         # Resolucion de metadata / archivos del torrent
         "opcion_actual": None,
