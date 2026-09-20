@@ -2,7 +2,7 @@ import os
 import pygame
 from ui import theme
 from core.state_manager import estado, FILAS_TECLADO
-from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, BOTON_START, obtener_direccion_input
+from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, BOTON_START, BOTON_L, obtener_direccion_input
 
 
 def obtener_archivos_filtrados():
@@ -10,6 +10,15 @@ def obtener_archivos_filtrados():
         return estado["archivos"]
     q = estado["texto_busqueda"].lower()
     return [a for a in estado["archivos"] if q in os.path.basename(a["path"]).lower()]
+
+
+def letra_con_caso_actual():
+    """Letra bajo el cursor del teclado, respetando el modo mayus/minus
+    actual (los simbolos y el espacio no tienen caso, quedan igual)."""
+    letra = FILAS_TECLADO[estado["fila_teclado"]][estado["col_teclado"]]
+    if letra.isalpha():
+        return letra.upper() if estado["mayusculas"] else letra.lower()
+    return letra
 
 
 def mover_cursor_teclado(direccion):
@@ -36,9 +45,11 @@ def manejar_input_teclado(event):
 
     if event.type == pygame.JOYBUTTONDOWN:
         if event.button == BOTON_A:
-            letra = FILAS_TECLADO[estado["fila_teclado"]][estado["col_teclado"]]
-            estado["texto_busqueda"] += letra
+            estado["texto_busqueda"] += letra_con_caso_actual()
             _clamp_cursor()
+
+        elif event.button == BOTON_L:
+            estado["mayusculas"] = not estado["mayusculas"]
 
         elif event.button == BOTON_Y:
             estado["texto_busqueda"] = estado["texto_busqueda"][:-1]
@@ -76,7 +87,12 @@ def dibujar_grilla_teclado(pantalla, y_inicio):
             color_fondo = theme.COLOR_CURSOR if es_actual else (45, 45, 55)
             pygame.draw.rect(pantalla, color_fondo, rect, border_radius=4)
 
-            txt_mostrado = "ESPACIO" if letra == " " else letra
+            if letra == " ":
+                txt_mostrado = "ESPACIO"
+            elif letra.isalpha():
+                txt_mostrado = letra.upper() if estado["mayusculas"] else letra.lower()
+            else:
+                txt_mostrado = letra
             txt = theme.fuente_item.render(txt_mostrado, True, (255, 255, 255))
             pantalla.blit(txt, txt.get_rect(center=rect.center))
 
@@ -98,7 +114,7 @@ def dibujar_overlay_busqueda(pantalla):
     dibujar_grilla_teclado(pantalla, 70)
 
     ayuda = theme.fuente_footer.render(
-        "A: Escribir  Y: Borrar  X: Espacio  START: Cerrar  B: Cancelar",
+        "A: Escribir  L: Mayus/Minus  Y: Borrar  X: Espacio  START: Cerrar  B: Cancelar",
         True, theme.COLOR_TEXTO_APAGADO
     )
     pantalla.blit(ayuda, (16, theme.ALTO - theme.ALTO_FOOTER + 9))

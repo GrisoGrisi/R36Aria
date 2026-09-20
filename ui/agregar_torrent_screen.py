@@ -3,10 +3,10 @@ import pygame
 from ui import theme
 from core import config, aria2_client
 from core.state_manager import (
-    estado, MENU_PRINCIPAL, NUEVOS_TORRENTS_LISTA, ENTRADA_TEXTO, FILAS_TECLADO,
+    estado, MENU_PRINCIPAL, NUEVOS_TORRENTS_LISTA, ENTRADA_TEXTO,
 )
-from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, BOTON_START, obtener_direccion_input
-from ui.keyboard import dibujar_grilla_teclado, mover_cursor_teclado
+from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, BOTON_START, BOTON_L, obtener_direccion_input
+from ui.keyboard import dibujar_grilla_teclado, mover_cursor_teclado, letra_con_caso_actual
 from ui.popups import mostrar_error_popup
 
 
@@ -67,9 +67,13 @@ def manejar_input_lista_nuevos(event):
         if event.button == BOTON_A:
             lista = estado["torrents_nuevos_encontrados"]
             if lista:
-                estado["torrent_actual_nuevo"] = lista[estado["torrents_nuevos_indice_cursor"]]
+                archivo = lista[estado["torrents_nuevos_indice_cursor"]]
+                estado["torrent_actual_nuevo"] = archivo
                 estado["modo_entrada_texto"] = "nombre"
-                estado["valor_entrada_texto"] = ""
+                # Sugerencia inicial: el nombre del archivo sin la extension
+                # .torrent. El usuario puede aceptarlo tal cual (START) o
+                # editarlo/borrarlo y escribir otro.
+                estado["valor_entrada_texto"] = os.path.splitext(archivo)[0]
                 estado["fila_teclado"] = 0
                 estado["col_teclado"] = 0
                 estado["pantalla"] = ENTRADA_TEXTO
@@ -118,10 +122,10 @@ def manejar_input_entrada_texto(event):
         return
 
     if event.button == BOTON_A:
-        letra = FILAS_TECLADO[estado["fila_teclado"]][estado["col_teclado"]]
-        if estado["modo_entrada_texto"] == "destino":
-            letra = letra.lower()
-        estado["valor_entrada_texto"] += letra
+        estado["valor_entrada_texto"] += letra_con_caso_actual()
+
+    elif event.button == BOTON_L:
+        estado["mayusculas"] = not estado["mayusculas"]
 
     elif event.button == BOTON_Y:
         estado["valor_entrada_texto"] = estado["valor_entrada_texto"][:-1]
@@ -202,4 +206,4 @@ def dibujar_entrada_texto(pantalla):
 
     dibujar_grilla_teclado(pantalla, caja_texto.bottom + 10)
 
-    theme.dibujar_footer(pantalla, "A: Escribir  Y: Borrar  X: Espacio  START: Confirmar  B: Cancelar")
+    theme.dibujar_footer(pantalla, "A: Escribir  L: Mayus/Minus  Y: Borrar  X: Espacio  START: Confirmar  B: Cancelar")
