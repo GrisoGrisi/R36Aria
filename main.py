@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 
@@ -19,7 +18,7 @@ except ImportError:
         sys.path.insert(0, _VENDOR_DIR)
     import pygame
 
-from core import aria2_client, fbdev
+from core import aria2_client, fbdev, config
 from core.input_handler import (
     inicializar_joystick, BOTON_SELECT, BOTON_START,
     registrar_evento_direccion, verificar_repeticion, limpiar_repeticion,
@@ -27,7 +26,7 @@ from core.input_handler import (
 from core.state_manager import (
     estado, MENU_PRINCIPAL, RESOLVIENDO_METADATA, LISTA_ARCHIVOS,
     DESCARGANDO, ELEGIR_ACCION_ARCHIVO, EXTRAYENDO, DESCARGA_COMPLETA,
-    CONFIRMAR_CANCELAR, ERROR_POPUP,
+    CONFIRMAR_CANCELAR, NUEVOS_TORRENTS_LISTA, ENTRADA_TEXTO, ERROR_POPUP,
 )
 
 from ui import theme
@@ -35,6 +34,10 @@ from ui.menu_screen import construir_menu_principal, manejar_input_menu, dibujar
 from ui.resolving_screen import actualizar_resolviendo_metadata, dibujar_resolviendo_metadata
 from ui.file_list_screen import manejar_input_lista_archivos, dibujar_lista_archivos, mover_cursor_lista
 from ui.keyboard import mover_cursor_teclado
+from ui.agregar_torrent_screen import (
+    manejar_input_lista_nuevos, dibujar_lista_nuevos, mover_cursor_lista_nuevos,
+    manejar_input_entrada_texto, dibujar_entrada_texto,
+)
 from ui.extraction_screen import (
     manejar_input_eleccion_archivo, dibujar_eleccion_archivo,
     actualizar_extrayendo, dibujar_extrayendo,
@@ -47,14 +50,7 @@ from ui.download_screen import (
 )
 from ui.popups import manejar_input_error_popup, dibujar_error_popup
 
-RUTA_CONFIG = "config/options.json"
 FPS = 30
-
-
-def cargar_configuracion():
-    with open(RUTA_CONFIG, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return data.get("opciones", [])
 
 
 def salir_programa():
@@ -92,6 +88,12 @@ def procesar_input(event):
     elif pantalla_actual == ELEGIR_ACCION_ARCHIVO:
         manejar_input_eleccion_archivo(event)
 
+    elif pantalla_actual == NUEVOS_TORRENTS_LISTA:
+        manejar_input_lista_nuevos(event)
+
+    elif pantalla_actual == ENTRADA_TEXTO:
+        manejar_input_entrada_texto(event)
+
     elif pantalla_actual == ERROR_POPUP:
         manejar_input_error_popup(event)
 
@@ -127,6 +129,10 @@ def aplicar_repeticion_direccion():
             mover_cursor_teclado(direccion)
         else:
             mover_cursor_lista(direccion)
+    elif pantalla_actual == NUEVOS_TORRENTS_LISTA:
+        mover_cursor_lista_nuevos(direccion)
+    elif pantalla_actual == ENTRADA_TEXTO:
+        mover_cursor_teclado(direccion)
 
 
 def dibujar(pantalla_pygame):
@@ -146,6 +152,10 @@ def dibujar(pantalla_pygame):
         dibujar_eleccion_archivo(pantalla_pygame)
     elif pantalla_actual == EXTRAYENDO:
         dibujar_extrayendo(pantalla_pygame)
+    elif pantalla_actual == NUEVOS_TORRENTS_LISTA:
+        dibujar_lista_nuevos(pantalla_pygame)
+    elif pantalla_actual == ENTRADA_TEXTO:
+        dibujar_entrada_texto(pantalla_pygame)
     elif pantalla_actual == ERROR_POPUP:
         # Redibuja la pantalla de fondo segun a donde se va a volver, y el popup encima
         if estado["pantalla_anterior"] == MENU_PRINCIPAL:
@@ -201,7 +211,8 @@ def main():
 
     aria2_client.iniciar_aria2()
 
-    opciones = cargar_configuracion()
+    opciones = config.cargar_opciones()
+    estado["opciones_categorias"] = opciones
     estado["opciones_menu"] = construir_menu_principal(opciones)
 
     reloj = pygame.time.Clock()
