@@ -42,6 +42,15 @@ Just drag and drop .torrent files on the /torrents folder and edit /config/optio
 
 ```
 
+## Scan For Torrents feature ##
+
+Additionally you can press START on the main menu to scan the /torrents folder in search of .torrent files that had not been added to the torrents list.
+Once in there you can pick a file and the on-screen keyboard will appear, once there you can manually add the name that will appear on the torrents list, 
+then, after pressing START to confirm the name, you can manually type the path where the downloads will save. Press START one more time to save the changes.
+
+With this process you can edit options.json without having to access to it.
+
+
 ## .zip Files Handling ##
 
 After a download is complete, if a .zip file is detected, you’ll be given three options:
@@ -58,16 +67,25 @@ The extracted contents will be stored in the same folder, not in a subfolder.
 
 - D-Pad: Navigate through the different options.
 
-- A: Select an option - Select a file to download.
+- A: Select an option
+  
+- SELECT + START: Close the app. **This works at any screen.**
 
-- B: Return to the main menu.
 
-- X: Start download.
+**Main Menu Controls**
+
+- START: Scan the /torrents folder in search of non-added torrents.
+
+
+**On-Torrent Controls**
 
 - SELECT: Open or close the search bar.
 
-- SELECT + START: Close the app.
-
+- A: Select files to download.
+  
+- B: Return to the main menu.
+  
+- X: Start download.
 
 
 **Search bar controls:**
@@ -81,6 +99,8 @@ The extracted contents will be stored in the same folder, not in a subfolder.
 - X: Insert a space.
 
 - B: Clear the search bar and close the on-screen keyboard.
+
+- L1: Switch between Lowercase and Uppercase.
 
 - SELECT or START: Close the search bar with the filter applied.
 
