@@ -1,7 +1,7 @@
 import pygame
 from ui import theme
-from core.state_manager import estado, RESOLVIENDO_METADATA, LISTA_ARCHIVOS, MENU_PRINCIPAL
-from core.input_handler import BOTON_A, BOTON_START, obtener_direccion_input
+from core.state_manager import estado, RESOLVIENDO_METADATA, LISTA_ARCHIVOS, MENU_PRINCIPAL, OPCIONES
+from core.input_handler import BOTON_A, BOTON_SELECT, BOTON_START, obtener_direccion_input
 from core import aria2_client
 from ui.popups import mostrar_error_popup
 
@@ -39,6 +39,9 @@ def manejar_input_menu(event, on_salir):
         elif event.button == BOTON_START:
             from ui.agregar_torrent_screen import iniciar_flujo_agregar_torrents
             iniciar_flujo_agregar_torrents()
+
+        elif event.button == BOTON_SELECT:
+            estado["pantalla"] = OPCIONES
 
 
 def _entrar_resolviendo_metadata(opcion_elegida):
@@ -102,4 +105,4 @@ def dibujar_menu(pantalla):
         texto = theme.fuente_item.render(opcion["nombre"], True, color)
         pantalla.blit(texto, (26, y + 6))
 
-    theme.dibujar_footer(pantalla, "A: Elegir   START: Agregar torrent   Dpad: Navegar")
+    theme.dibujar_footer(pantalla, "A: Elegir  START: Agregar torrent  SELECT: Opciones  Dpad: Navegar")
