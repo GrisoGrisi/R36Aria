@@ -26,7 +26,8 @@ from core.input_handler import (
 from core.state_manager import (
     estado, MENU_PRINCIPAL, RESOLVIENDO_METADATA, LISTA_ARCHIVOS,
     DESCARGANDO, ELEGIR_ACCION_ARCHIVO, EXTRAYENDO, DESCARGA_COMPLETA,
-    CONFIRMAR_CANCELAR, NUEVOS_TORRENTS_LISTA, ENTRADA_TEXTO, OPCIONES, ERROR_POPUP,
+    CONFIRMAR_CANCELAR, NUEVOS_TORRENTS_LISTA, ENTRADA_TEXTO,
+    OPCIONES, SELECCIONAR_CATEGORIA, ERROR_POPUP,
 )
 
 from ui import theme
@@ -38,7 +39,10 @@ from ui.agregar_torrent_screen import (
     manejar_input_lista_nuevos, dibujar_lista_nuevos, mover_cursor_lista_nuevos,
     manejar_input_entrada_texto, dibujar_entrada_texto,
 )
-from ui.options_screen import manejar_input_opciones, dibujar_opciones
+from ui.options_screen import (
+    manejar_input_opciones, dibujar_opciones, mover_cursor_opciones,
+    manejar_input_seleccionar_categoria, dibujar_seleccionar_categoria, mover_cursor_seleccionar_categoria,
+)
 from ui.extraction_screen import (
     manejar_input_eleccion_archivo, dibujar_eleccion_archivo,
     actualizar_extrayendo, dibujar_extrayendo,
@@ -98,6 +102,9 @@ def procesar_input(event):
     elif pantalla_actual == OPCIONES:
         manejar_input_opciones(event)
 
+    elif pantalla_actual == SELECCIONAR_CATEGORIA:
+        manejar_input_seleccionar_categoria(event)
+
     elif pantalla_actual == ERROR_POPUP:
         manejar_input_error_popup(event)
 
@@ -137,6 +144,10 @@ def aplicar_repeticion_direccion():
         mover_cursor_lista_nuevos(direccion)
     elif pantalla_actual == ENTRADA_TEXTO:
         mover_cursor_teclado(direccion)
+    elif pantalla_actual == OPCIONES:
+        mover_cursor_opciones(direccion)
+    elif pantalla_actual == SELECCIONAR_CATEGORIA:
+        mover_cursor_seleccionar_categoria(direccion)
 
 
 def dibujar(pantalla_pygame):
@@ -162,6 +173,8 @@ def dibujar(pantalla_pygame):
         dibujar_entrada_texto(pantalla_pygame)
     elif pantalla_actual == OPCIONES:
         dibujar_opciones(pantalla_pygame)
+    elif pantalla_actual == SELECCIONAR_CATEGORIA:
+        dibujar_seleccionar_categoria(pantalla_pygame)
     elif pantalla_actual == ERROR_POPUP:
         # Redibuja la pantalla de fondo segun a donde se va a volver, y el popup encima
         if estado["pantalla_anterior"] == MENU_PRINCIPAL:
