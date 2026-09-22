@@ -4,6 +4,7 @@ from ui import theme
 from core import config, aria2_client
 from core.state_manager import (
     estado, MENU_PRINCIPAL, NUEVOS_TORRENTS_LISTA, ENTRADA_TEXTO,
+    SELECCIONAR_CATEGORIA,
 )
 from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, BOTON_START, BOTON_L, obtener_direccion_input
 from ui.keyboard import dibujar_grilla_teclado, mover_cursor_teclado, letra_con_caso_actual
@@ -145,7 +146,9 @@ def _confirmar_entrada_texto():
     if not valor:
         return  # no dejamos confirmar vacio
 
-    if estado["modo_entrada_texto"] == "nombre":
+    modo = estado["modo_entrada_texto"]
+
+    if modo == "nombre":
         estado["nuevo_torrent_nombre"] = valor
         estado["modo_entrada_texto"] = "destino"
         estado["valor_entrada_texto"] = ""
@@ -153,14 +156,42 @@ def _confirmar_entrada_texto():
         estado["col_teclado"] = 0
         return  # se queda en ENTRADA_TEXTO, solo cambia el modo/titulo
 
-    # modo == "destino": ya tenemos nombre + torrent + carpeta, se guarda
-    nueva_opcion = {
-        "nombre": estado["nuevo_torrent_nombre"],
-        "torrent_path": estado["torrent_actual_nuevo"],
-        "carpeta_destino": valor,
-    }
-    estado["opciones_categorias"].append(nueva_opcion)
+    if modo == "destino":
+        # ya tenemos nombre + torrent + carpeta, se guarda como categoria nueva
+        nueva_opcion = {
+            "nombre": estado["nuevo_torrent_nombre"],
+            "torrent_path": estado["torrent_actual_nuevo"],
+            "carpeta_destino": valor,
+        }
+        estado["opciones_categorias"].append(nueva_opcion)
+        _guardar_y_refrescar_menu()
 
+        if estado["torrent_actual_nuevo"] in estado["torrents_nuevos_encontrados"]:
+            estado["torrents_nuevos_encontrados"].remove(estado["torrent_actual_nuevo"])
+        estado["torrents_nuevos_indice_cursor"] = min(
+            estado["torrents_nuevos_indice_cursor"],
+            max(0, len(estado["torrents_nuevos_encontrados"]) - 1),
+        )
+
+        if estado["torrents_nuevos_encontrados"]:
+            estado["pantalla"] = NUEVOS_TORRENTS_LISTA
+        else:
+            estado["pantalla"] = MENU_PRINCIPAL
+        return
+
+    # modos de edicion de una categoria ya existente (desde Opciones)
+    idx = estado["editar_categoria_indice_actual"]
+    if idx is not None and 0 <= idx < len(estado["opciones_categorias"]):
+        if modo == "editar_nombre":
+            estado["opciones_categorias"][idx]["nombre"] = valor
+        elif modo == "editar_carpeta":
+            estado["opciones_categorias"][idx]["carpeta_destino"] = valor
+        _guardar_y_refrescar_menu()
+
+    estado["pantalla"] = SELECCIONAR_CATEGORIA
+
+
+def _guardar_y_refrescar_menu():
     try:
         config.guardar_opciones(estado["opciones_categorias"])
     except Exception as e:
@@ -169,29 +200,29 @@ def _confirmar_entrada_texto():
     from ui.menu_screen import construir_menu_principal
     estado["opciones_menu"] = construir_menu_principal(estado["opciones_categorias"])
 
-    if estado["torrent_actual_nuevo"] in estado["torrents_nuevos_encontrados"]:
-        estado["torrents_nuevos_encontrados"].remove(estado["torrent_actual_nuevo"])
-    estado["torrents_nuevos_indice_cursor"] = min(
-        estado["torrents_nuevos_indice_cursor"],
-        max(0, len(estado["torrents_nuevos_encontrados"]) - 1),
-    )
-
-    if estado["torrents_nuevos_encontrados"]:
-        estado["pantalla"] = NUEVOS_TORRENTS_LISTA
-    else:
-        estado["pantalla"] = MENU_PRINCIPAL
-
 
 def _cancelar_entrada_texto():
-    if estado["torrents_nuevos_encontrados"]:
-        estado["pantalla"] = NUEVOS_TORRENTS_LISTA
+    modo = estado["modo_entrada_texto"]
+    if modo in ("nombre", "destino"):
+        if estado["torrents_nuevos_encontrados"]:
+            estado["pantalla"] = NUEVOS_TORRENTS_LISTA
+        else:
+            estado["pantalla"] = MENU_PRINCIPAL
     else:
-        estado["pantalla"] = MENU_PRINCIPAL
+        estado["pantalla"] = SELECCIONAR_CATEGORIA
+
+
+TITULOS_ENTRADA_TEXTO = {
+    "nombre": "Nombre para el torrent",
+    "destino": "Carpeta destino (ruta completa)",
+    "editar_nombre": "Nuevo nombre para el torrent",
+    "editar_carpeta": "Nueva carpeta destino (ruta completa)",
+}
 
 
 def dibujar_entrada_texto(pantalla):
     pantalla.fill(theme.COLOR_FONDO)
-    titulo = "Nombre para el torrent" if estado["modo_entrada_texto"] == "nombre" else "Carpeta destino (ruta completa)"
+    titulo = TITULOS_ENTRADA_TEXTO.get(estado["modo_entrada_texto"], "")
     theme.dibujar_header(pantalla, titulo)
 
     caja_texto = pygame.Rect(20, theme.ALTO_HEADER + 10, theme.ANCHO - 40, 34)
