@@ -17,6 +17,7 @@ CONFIRMAR_CANCELAR = "CONFIRMAR_CANCELAR"
 NUEVOS_TORRENTS_LISTA = "NUEVOS_TORRENTS_LISTA"
 ENTRADA_TEXTO = "ENTRADA_TEXTO"
 OPCIONES = "OPCIONES"
+SELECCIONAR_CATEGORIA = "SELECCIONAR_CATEGORIA"
 ERROR_POPUP = "ERROR_POPUP"
 
 # --- Timeouts configurables ---
@@ -51,8 +52,14 @@ def estado_inicial():
         "torrents_nuevos_indice_cursor": 0,
         "torrent_actual_nuevo": "",
         "nuevo_torrent_nombre": "",
-        "modo_entrada_texto": "nombre",  # "nombre" o "destino"
+        "modo_entrada_texto": "nombre",  # "nombre"/"destino" (agregar) o "editar_nombre"/"editar_carpeta" (editar)
         "valor_entrada_texto": "",
+
+        # Pantalla de Opciones y edicion de categorias existentes
+        "opciones_menu_cursor": 0,
+        "editar_categoria_modo": "nombre",  # "nombre" o "carpeta": que campo se va a editar
+        "editar_categoria_indice_cursor": 0,
+        "editar_categoria_indice_actual": None,  # indice dentro de opciones_categorias que se esta editando
 
         # Resolucion de metadata / archivos del torrent
         "opcion_actual": None,
