@@ -41,6 +41,7 @@ def estado_inicial():
     return {
         "pantalla": MENU_PRINCIPAL,
         "pantalla_anterior": MENU_PRINCIPAL,
+        "idioma": "es",  # se sobreescribe al arrancar con core.settings.cargar_idioma()
 
         # Menu principal
         "opciones_categorias": [],  # las categorias "reales" (sin las entradas especiales de Agregar/Salir), es lo que se persiste
