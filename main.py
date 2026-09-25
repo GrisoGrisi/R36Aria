@@ -18,7 +18,7 @@ except ImportError:
         sys.path.insert(0, _VENDOR_DIR)
     import pygame
 
-from core import aria2_client, fbdev, config
+from core import aria2_client, fbdev, config, settings
 from core.input_handler import (
     inicializar_joystick, BOTON_SELECT, BOTON_START,
     registrar_evento_direccion, verificar_repeticion, limpiar_repeticion,
@@ -229,6 +229,8 @@ def main():
     theme.inicializar_fuentes()
 
     aria2_client.iniciar_aria2()
+
+    estado["idioma"] = settings.cargar_idioma()
 
     opciones = config.cargar_opciones()
     estado["opciones_categorias"] = opciones
