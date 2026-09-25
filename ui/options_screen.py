@@ -4,21 +4,29 @@ from core.state_manager import (
     estado, MENU_PRINCIPAL, OPCIONES, SELECCIONAR_CATEGORIA, ENTRADA_TEXTO,
 )
 from core.input_handler import BOTON_A, BOTON_B, obtener_direccion_input
+from core.i18n import t
+from core import settings
 
-OPCIONES_MENU = [
-    {"titulo": "Renombrar un torrent", "modo": "nombre"},
-    {"titulo": "Cambiar carpeta de descarga", "modo": "carpeta"},
-]
+
+def _opciones_menu():
+    """Se arma en cada frame (no como lista fija) para que los titulos
+    reflejen el idioma actual, incluido el de la propia entrada de idioma."""
+    return [
+        {"titulo": t("renombrar_torrent"), "modo": "nombre"},
+        {"titulo": t("cambiar_carpeta_descarga"), "modo": "carpeta"},
+        {"titulo": t("idioma_entrada"), "modo": "idioma"},
+    ]
 
 
 # ---------- Submenu de Opciones ----------
 
 def mover_cursor_opciones(direccion):
     _, y = direccion
+    total = len(_opciones_menu())
     if y == 1:
         estado["opciones_menu_cursor"] = max(0, estado["opciones_menu_cursor"] - 1)
     elif y == -1:
-        estado["opciones_menu_cursor"] = min(len(OPCIONES_MENU) - 1, estado["opciones_menu_cursor"] + 1)
+        estado["opciones_menu_cursor"] = min(total - 1, estado["opciones_menu_cursor"] + 1)
 
 
 def manejar_input_opciones(event):
@@ -29,7 +37,13 @@ def manejar_input_opciones(event):
 
     if event.type == pygame.JOYBUTTONDOWN:
         if event.button == BOTON_A:
-            entrada = OPCIONES_MENU[estado["opciones_menu_cursor"]]
+            entrada = _opciones_menu()[estado["opciones_menu_cursor"]]
+
+            if entrada["modo"] == "idioma":
+                estado["idioma"] = "en" if estado["idioma"] == "es" else "es"
+                settings.guardar_idioma(estado["idioma"])
+                return  # se queda en Opciones, el titulo ya cambia solo
+
             estado["editar_categoria_modo"] = entrada["modo"]
             estado["editar_categoria_indice_cursor"] = 0
             estado["pantalla"] = SELECCIONAR_CATEGORIA
@@ -40,9 +54,9 @@ def manejar_input_opciones(event):
 
 def dibujar_opciones(pantalla):
     pantalla.fill(theme.COLOR_FONDO)
-    theme.dibujar_header(pantalla, "Opciones")
+    theme.dibujar_header(pantalla, t("opciones_titulo"))
 
-    for i, entrada in enumerate(OPCIONES_MENU):
+    for i, entrada in enumerate(_opciones_menu()):
         y = theme.Y_INICIO_LISTA + i * theme.ALTURA_ITEM
         es_actual = i == estado["opciones_menu_cursor"]
 
@@ -54,7 +68,7 @@ def dibujar_opciones(pantalla):
         texto = theme.fuente_item.render(entrada["titulo"], True, color)
         pantalla.blit(texto, (26, y + 6))
 
-    theme.dibujar_footer(pantalla, "A: Elegir  B: Volver al menu")
+    theme.dibujar_footer(pantalla, t("opciones_footer"))
 
 
 # ---------- Lista de categorias existentes para elegir cual editar ----------
@@ -107,7 +121,7 @@ def manejar_input_seleccionar_categoria(event):
 
 def dibujar_seleccionar_categoria(pantalla):
     pantalla.fill(theme.COLOR_FONDO)
-    titulo = "Renombrar: elegi un torrent" if estado["editar_categoria_modo"] == "nombre" else "Cambiar carpeta: elegi un torrent"
+    titulo = t("renombrar_elegir_torrent") if estado["editar_categoria_modo"] == "nombre" else t("cambiar_carpeta_elegir_torrent")
     theme.dibujar_header(pantalla, titulo)
 
     categorias = estado["opciones_categorias"]
@@ -128,7 +142,7 @@ def dibujar_seleccionar_categoria(pantalla):
         pantalla.blit(texto, (26, y + 6))
 
     if not categorias:
-        texto = theme.fuente_item.render("No hay torrents cargados todavia", True, theme.COLOR_TEXTO_APAGADO)
+        texto = theme.fuente_item.render(t("no_hay_torrents_cargados"), True, theme.COLOR_TEXTO_APAGADO)
         pantalla.blit(texto, texto.get_rect(center=(theme.ANCHO // 2, theme.ALTO // 2)))
 
-    theme.dibujar_footer(pantalla, "A: Elegir  B: Volver")
+    theme.dibujar_footer(pantalla, t("seleccionar_categoria_footer"))

@@ -3,6 +3,7 @@ import pygame
 from ui import theme
 from core.state_manager import estado, FILAS_TECLADO
 from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, BOTON_START, BOTON_L, obtener_direccion_input
+from core.i18n import t
 
 
 def obtener_archivos_filtrados():
@@ -88,7 +89,7 @@ def dibujar_grilla_teclado(pantalla, y_inicio):
             pygame.draw.rect(pantalla, color_fondo, rect, border_radius=4)
 
             if letra == " ":
-                txt_mostrado = "ESPACIO"
+                txt_mostrado = t("espacio")
             elif letra.isalpha():
                 txt_mostrado = letra.upper() if estado["mayusculas"] else letra.lower()
             else:
@@ -106,7 +107,7 @@ def dibujar_overlay_busqueda(pantalla):
     pygame.draw.rect(pantalla, (30, 30, 30), caja_texto, border_radius=6)
     pygame.draw.rect(pantalla, theme.COLOR_ACENTO, caja_texto, width=2, border_radius=6)
 
-    texto_mostrado = estado["texto_busqueda"] or "Buscar..."
+    texto_mostrado = estado["texto_busqueda"] or t("buscar_placeholder")
     color = (255, 255, 255) if estado["texto_busqueda"] else theme.COLOR_TEXTO_APAGADO
     texto = theme.fuente_item.render(texto_mostrado, True, color)
     pantalla.blit(texto, (caja_texto.x + 10, caja_texto.y + 6))
@@ -114,7 +115,7 @@ def dibujar_overlay_busqueda(pantalla):
     dibujar_grilla_teclado(pantalla, 70)
 
     ayuda = theme.fuente_footer.render(
-        "A: Escribir  L: Mayus/Minus  Y: Borrar  X: Espacio  START: Cerrar  B: Cancelar",
+        t("teclado_footer_busqueda"),
         True, theme.COLOR_TEXTO_APAGADO
     )
     pantalla.blit(ayuda, (16, theme.ALTO - theme.ALTO_FOOTER + 9))

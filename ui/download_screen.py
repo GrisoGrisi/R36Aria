@@ -8,6 +8,7 @@ from core.state_manager import (
 from core.input_handler import BOTON_A, BOTON_B
 from core import aria2_client, archivos
 from ui.popups import mostrar_error_popup, manejar_input_confirmar_cancelar, dibujar_confirmar_cancelar
+from core.i18n import t
 
 
 def manejar_input_descargando(event):
@@ -57,11 +58,11 @@ def actualizar_descargando():
     try:
         progreso, status, error = aria2_client.consultar_progreso(estado["gid"])
     except Exception:
-        mostrar_error_popup("Error al descargar, intentelo de nuevo", MENU_PRINCIPAL)
+        mostrar_error_popup("error_descargar", MENU_PRINCIPAL)
         return
 
     if error:
-        mostrar_error_popup("Error al descargar, intentelo de nuevo", MENU_PRINCIPAL)
+        mostrar_error_popup("error_descargar", MENU_PRINCIPAL)
         return
 
     estado["progreso"] = progreso
@@ -87,7 +88,7 @@ def actualizar_descargando():
 
     inactivo_desde = ahora - estado["ultimo_avance_ts"]
     if inactivo_desde > TIMEOUT_INACTIVIDAD_DESCARGA:
-        mostrar_error_popup("Error al descargar, intentelo de nuevo", MENU_PRINCIPAL)
+        mostrar_error_popup("error_descargar", MENU_PRINCIPAL)
 
 
 def _finalizar_descarga():
@@ -128,14 +129,15 @@ def dibujar_descargando(pantalla):
     pygame.draw.rect(pantalla, (80, 80, 90), (x, y, ancho_barra, alto_barra), width=2, border_radius=6)
 
     cantidad = len(estado["indices_elegidos"])
-    texto_cantidad = f"{cantidad} archivo" + ("" if cantidad == 1 else "s") + f" - {nombre}"
+    palabra = t("archivo") if cantidad == 1 else t("archivos")
+    texto_cantidad = f"{cantidad} {palabra} -> {nombre}"
     render_cantidad = theme.fuente_footer.render(texto_cantidad, True, theme.COLOR_TEXTO_APAGADO)
     pantalla.blit(render_cantidad, render_cantidad.get_rect(center=(theme.ANCHO // 2, y - 48)))
 
     porcentaje = theme.fuente_item.render(f"{int(estado['progreso'] * 100)}%", True, (255, 255, 255))
     pantalla.blit(porcentaje, porcentaje.get_rect(center=(theme.ANCHO // 2, y - 24)))
 
-    theme.dibujar_footer(pantalla, "B: Cancelar descarga")
+    theme.dibujar_footer(pantalla, t("cancelar_descarga_footer"))
 
     if estado["pantalla"] == CONFIRMAR_CANCELAR:
         dibujar_confirmar_cancelar(pantalla)
@@ -170,7 +172,7 @@ def dibujar_descarga_completa(pantalla):
     fuente_ruta = theme.fuente_footer
     max_ancho_texto = theme.ANCHO - 60
 
-    lineas = [f"Guardado en: {carpeta_destino}"]
+    lineas = [t("guardado_en", carpeta=carpeta_destino)]
     lineas.extend(os.path.basename(r) for r in rutas)
 
     lineas_envueltas = []
@@ -182,7 +184,7 @@ def dibujar_descarga_completa(pantalla):
     max_lineas = max(1, alto_disponible // alto_linea)
     if len(lineas_envueltas) > max_lineas:
         lineas_mostradas = lineas_envueltas[: max_lineas - 1]
-        lineas_mostradas.append(f"... y {len(lineas_envueltas) - (max_lineas - 1)} mas")
+        lineas_mostradas.append(t("y_n_mas", n=len(lineas_envueltas) - (max_lineas - 1)))
     else:
         lineas_mostradas = lineas_envueltas
 
@@ -195,7 +197,7 @@ def dibujar_descarga_completa(pantalla):
     pygame.draw.rect(pantalla, theme.COLOR_OK, caja, width=2, border_radius=10)
 
     cantidad = len(rutas)
-    titulo = f"Descarga completa ({cantidad} archivos)" if cantidad > 1 else "Descarga completa"
+    titulo = t("descarga_completa_cantidad", cantidad=cantidad) if cantidad > 1 else t("descarga_completa")
     texto = theme.fuente_titulo.render(titulo, True, (255, 255, 255))
     pantalla.blit(texto, texto.get_rect(centerx=caja.centerx, top=caja.top + 15))
 
@@ -205,4 +207,4 @@ def dibujar_descarga_completa(pantalla):
         pantalla.blit(texto_linea, texto_linea.get_rect(centerx=caja.centerx, top=y))
         y += alto_linea
 
-    theme.dibujar_footer(pantalla, "A o B: Volver al menu")
+    theme.dibujar_footer(pantalla, t("volver_menu_ayb"))

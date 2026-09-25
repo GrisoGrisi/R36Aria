@@ -3,6 +3,7 @@ from ui import theme
 from core.state_manager import estado, LISTA_ARCHIVOS, MENU_PRINCIPAL, TIMEOUT_METADATA
 from core import aria2_client
 from ui.popups import mostrar_error_popup
+from core.i18n import t
 
 
 def actualizar_resolviendo_metadata():
@@ -14,11 +15,11 @@ def actualizar_resolviendo_metadata():
     try:
         listo, gid_real, error = aria2_client.chequear_metadata(estado["gid"])
     except Exception:
-        mostrar_error_popup("Error al cargar magnet, intentelo de nuevo", MENU_PRINCIPAL)
+        mostrar_error_popup("error_cargar_magnet", MENU_PRINCIPAL)
         return
 
     if error:
-        mostrar_error_popup("Error al cargar magnet, intentelo de nuevo", MENU_PRINCIPAL)
+        mostrar_error_popup("error_cargar_magnet", MENU_PRINCIPAL)
         return
 
     if listo:
@@ -30,7 +31,7 @@ def actualizar_resolviendo_metadata():
         return
 
     if transcurrido > TIMEOUT_METADATA:
-        mostrar_error_popup("Error al cargar magnet, intentelo de nuevo", MENU_PRINCIPAL)
+        mostrar_error_popup("error_cargar_magnet", MENU_PRINCIPAL)
 
 
 def dibujar_resolviendo_metadata(pantalla):
@@ -38,7 +39,7 @@ def dibujar_resolviendo_metadata(pantalla):
     nombre = estado["opcion_actual"]["nombre"] if estado["opcion_actual"] else ""
     theme.dibujar_header(pantalla, nombre)
 
-    texto = theme.fuente_item.render("Resolviendo informacion del magnet...", True, theme.COLOR_TEXTO)
+    texto = theme.fuente_item.render(t("resolviendo_metadata"), True, theme.COLOR_TEXTO)
     pantalla.blit(texto, texto.get_rect(center=(theme.ANCHO // 2, theme.ALTO // 2)))
 
-    theme.dibujar_footer(pantalla, "Espera un momento")
+    theme.dibujar_footer(pantalla, t("espera_momento"))

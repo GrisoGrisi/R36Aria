@@ -9,6 +9,7 @@ from core.state_manager import (
 from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, BOTON_START, BOTON_L, obtener_direccion_input
 from ui.keyboard import dibujar_grilla_teclado, mover_cursor_teclado, letra_con_caso_actual
 from ui.popups import mostrar_error_popup
+from core.i18n import t
 
 
 def _escanear_torrents_nuevos():
@@ -33,7 +34,7 @@ def iniciar_flujo_agregar_torrents():
     estado["torrents_nuevos_indice_cursor"] = 0
 
     if not encontrados:
-        mostrar_error_popup("No se encontraron torrents nuevos en torrents/", MENU_PRINCIPAL)
+        mostrar_error_popup("error_no_torrents_nuevos", MENU_PRINCIPAL)
         return
 
     estado["pantalla"] = NUEVOS_TORRENTS_LISTA
@@ -85,7 +86,7 @@ def manejar_input_lista_nuevos(event):
 
 def dibujar_lista_nuevos(pantalla):
     pantalla.fill(theme.COLOR_FONDO)
-    theme.dibujar_header(pantalla, "Torrents nuevos")
+    theme.dibujar_header(pantalla, t("torrents_nuevos_titulo"))
 
     lista = estado["torrents_nuevos_encontrados"]
     offset = _calcular_offset_scroll(estado["torrents_nuevos_indice_cursor"], len(lista))
@@ -105,10 +106,10 @@ def dibujar_lista_nuevos(pantalla):
         pantalla.blit(texto, (26, y + 6))
 
     if not lista:
-        texto = theme.fuente_item.render("Sin torrents nuevos", True, theme.COLOR_TEXTO_APAGADO)
+        texto = theme.fuente_item.render(t("sin_torrents_nuevos"), True, theme.COLOR_TEXTO_APAGADO)
         pantalla.blit(texto, texto.get_rect(center=(theme.ANCHO // 2, theme.ALTO // 2)))
 
-    theme.dibujar_footer(pantalla, "A: Configurar   B: Volver al menu")
+    theme.dibujar_footer(pantalla, t("agregar_footer"))
 
 
 # ---------- Pantalla: entrada de texto (nombre y luego carpeta destino) ----------
@@ -213,16 +214,17 @@ def _cancelar_entrada_texto():
 
 
 TITULOS_ENTRADA_TEXTO = {
-    "nombre": "Nombre para el torrent",
-    "destino": "Carpeta destino (ruta completa)",
-    "editar_nombre": "Nuevo nombre para el torrent",
-    "editar_carpeta": "Nueva carpeta destino (ruta completa)",
+    "nombre": "nombre_para_torrent",
+    "destino": "carpeta_destino_completa",
+    "editar_nombre": "nuevo_nombre_torrent",
+    "editar_carpeta": "nueva_carpeta_destino",
 }
 
 
 def dibujar_entrada_texto(pantalla):
     pantalla.fill(theme.COLOR_FONDO)
-    titulo = TITULOS_ENTRADA_TEXTO.get(estado["modo_entrada_texto"], "")
+    clave_titulo = TITULOS_ENTRADA_TEXTO.get(estado["modo_entrada_texto"], "")
+    titulo = t(clave_titulo) if clave_titulo else ""
     theme.dibujar_header(pantalla, titulo)
 
     caja_texto = pygame.Rect(20, theme.ALTO_HEADER + 10, theme.ANCHO - 40, 34)
@@ -237,4 +239,4 @@ def dibujar_entrada_texto(pantalla):
 
     dibujar_grilla_teclado(pantalla, caja_texto.bottom + 10)
 
-    theme.dibujar_footer(pantalla, "A: Escribir  L: Mayus/Minus  Y: Borrar  X: Espacio  START: Confirmar  B: Cancelar")
+    theme.dibujar_footer(pantalla, t("teclado_footer_entrada"))

@@ -5,12 +5,10 @@ from core.state_manager import estado, DESCARGA_COMPLETA, EXTRAYENDO, MENU_PRINC
 from core.input_handler import BOTON_A, obtener_direccion_input
 from core import archivos
 from ui.popups import mostrar_error_popup
+from core.i18n import t
 
-OPCIONES = [
-    "Mantener el archivo como esta",
-    "Extraer y borrar el comprimido",
-    "Extraer y mantener el comprimido",
-]
+def _opciones_textos():
+    return [t("mantener_archivo"), t("extraer_borrar"), t("extraer_mantener")]
 
 
 # ---------- Pantalla de eleccion (3 opciones) ----------
@@ -22,7 +20,7 @@ def manejar_input_eleccion_archivo(event):
         if y == 1:
             estado["accion_archivo_indice"] = max(0, estado["accion_archivo_indice"] - 1)
         elif y == -1:
-            estado["accion_archivo_indice"] = min(len(OPCIONES) - 1, estado["accion_archivo_indice"] + 1)
+            estado["accion_archivo_indice"] = min(len(_opciones_textos()) - 1, estado["accion_archivo_indice"] + 1)
         return
 
     if event.type == pygame.JOYBUTTONDOWN and event.button == BOTON_A:
@@ -64,22 +62,22 @@ def _iniciar_extractor_actual():
         return True
     except Exception as e:
         print(f"[R36ARIA] Error al iniciar la extraccion de '{ruta}': {e}")
-        mostrar_error_popup("No se pudo extraer el archivo", MENU_PRINCIPAL)
+        mostrar_error_popup("error_extraer", MENU_PRINCIPAL)
         return False
 
 
 def dibujar_eleccion_archivo(pantalla):
     pantalla.fill(theme.COLOR_FONDO)
-    theme.dibujar_header(pantalla, "Archivo comprimido")
+    theme.dibujar_header(pantalla, t("archivo_comprimido_titulo"))
 
     texto_info = theme.fuente_footer.render(
-        "Se detecto un archivo comprimido, que queres hacer?",
+        t("detecto_comprimido_pregunta"),
         True, theme.COLOR_TEXTO_APAGADO
     )
     pantalla.blit(texto_info, (20, theme.ALTO_HEADER + 16))
 
     y_inicio = theme.ALTO_HEADER + 60
-    for i, opcion in enumerate(OPCIONES):
+    for i, opcion in enumerate(_opciones_textos()):
         y = y_inicio + i * theme.ALTURA_ITEM
         es_actual = i == estado["accion_archivo_indice"]
 
@@ -91,7 +89,7 @@ def dibujar_eleccion_archivo(pantalla):
         texto = theme.fuente_item.render(opcion, True, color)
         pantalla.blit(texto, (26, y + 6))
 
-    theme.dibujar_footer(pantalla, "A: Elegir   Dpad: Navegar")
+    theme.dibujar_footer(pantalla, t("elegir_dpad_footer"))
 
 
 # ---------- Pantalla de extraccion (barra de progreso) ----------
@@ -113,7 +111,7 @@ def actualizar_extrayendo():
         print(f"[R36ARIA] Error durante la extraccion: {e}")
         extractor.cerrar()
         estado["extractor"] = None
-        mostrar_error_popup("Error al extraer el archivo", MENU_PRINCIPAL)
+        mostrar_error_popup("error_extraer", MENU_PRINCIPAL)
         return
 
     if extractor.bytes_totales:
@@ -146,7 +144,7 @@ def dibujar_extrayendo(pantalla):
     pantalla.fill(theme.COLOR_FONDO)
     total = estado.get("total_extraccion", 1) or 1
     actual = estado.get("indice_extraccion_actual", 0) + 1
-    titulo = f"Extrayendo... ({actual}/{total})" if total > 1 else "Extrayendo..."
+    titulo = t("extrayendo_cantidad", actual=actual, total=total) if total > 1 else t("extrayendo")
     theme.dibujar_header(pantalla, titulo)
 
     nombre_actual = ""
@@ -171,4 +169,4 @@ def dibujar_extrayendo(pantalla):
     porcentaje = theme.fuente_item.render(f"{int(estado['progreso_extraccion'] * 100)}%", True, (255, 255, 255))
     pantalla.blit(porcentaje, porcentaje.get_rect(center=(theme.ANCHO // 2, y - 24)))
 
-    theme.dibujar_footer(pantalla, "Espera un momento...")
+    theme.dibujar_footer(pantalla, t("espera_momento_puntos"))

@@ -3,6 +3,7 @@ from ui import theme
 from core.state_manager import estado, RESOLVIENDO_METADATA, LISTA_ARCHIVOS, MENU_PRINCIPAL, OPCIONES
 from core.input_handler import BOTON_A, BOTON_SELECT, BOTON_START, obtener_direccion_input
 from core import aria2_client
+from core.i18n import t
 from ui.popups import mostrar_error_popup
 
 
@@ -60,7 +61,7 @@ def _entrar_con_torrent_local(opcion_elegida):
         gid = aria2_client.agregar_torrent_en_pausa(ruta)
     except Exception as e:
         print(f"[R36ARIA] Error al leer/agregar torrent local '{ruta}': {e}")
-        mostrar_error_popup("No se pudo leer el archivo .torrent", MENU_PRINCIPAL)
+        mostrar_error_popup("error_leer_torrent", MENU_PRINCIPAL)
         return
 
     estado["gid"] = gid
@@ -102,7 +103,8 @@ def dibujar_menu(pantalla):
         if idx_real == estado["indice_menu"]:
             color = theme.COLOR_ACENTO
 
-        texto = theme.fuente_item.render(opcion["nombre"], True, color)
+        nombre_mostrado = t("salir") if opcion.get("tipo") == "salir" else opcion["nombre"]
+        texto = theme.fuente_item.render(nombre_mostrado, True, color)
         pantalla.blit(texto, (26, y + 6))
 
-    theme.dibujar_footer(pantalla, "A: Elegir  START: Agregar torrent  SELECT: Opciones  Dpad: Navegar")
+    theme.dibujar_footer(pantalla, t("menu_footer"))

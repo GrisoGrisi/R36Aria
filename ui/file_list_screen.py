@@ -6,6 +6,7 @@ from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_SELECT, obtener_
 from core import aria2_client
 from ui.keyboard import obtener_archivos_filtrados, manejar_input_teclado, dibujar_overlay_busqueda
 from core.state_manager import resetear_para_menu
+from core.i18n import t
 
 
 def _calcular_offset_scroll(indice_cursor, total_items):
@@ -99,12 +100,12 @@ def dibujar_lista_archivos(pantalla):
             pantalla.blit(marca, (theme.ANCHO - 50, y + 6))
 
     if not archivos_filtrados:
-        texto = theme.fuente_item.render("Sin resultados", True, theme.COLOR_TEXTO_APAGADO)
+        texto = theme.fuente_item.render(t("sin_resultados"), True, theme.COLOR_TEXTO_APAGADO)
         pantalla.blit(texto, texto.get_rect(center=(theme.ANCHO // 2, theme.ALTO // 2)))
 
     cantidad = len(estado["indices_elegidos"])
     sufijo_cantidad = f" ({cantidad})" if cantidad else ""
-    theme.dibujar_footer(pantalla, f"A: Marcar{sufijo_cantidad}  X: Descargar  SELECT: Buscar  B: Volver")
+    theme.dibujar_footer(pantalla, t("lista_footer", sufijo=sufijo_cantidad))
 
     if estado["buscando"]:
         dibujar_overlay_busqueda(pantalla)
