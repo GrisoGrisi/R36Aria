@@ -73,7 +73,7 @@ def dibujar_confirmar_cancelar(pantalla):
     pygame.draw.rect(pantalla, (30, 30, 30), caja, border_radius=10)
     pygame.draw.rect(pantalla, theme.COLOR_ADVERTENCIA, caja, width=2, border_radius=10)
 
-    texto = theme.fuente_item.render(t("confirmar_cancelar_descarga"), True, (255, 255, 255))
+    texto = theme.fuente_item.render(t(estado.get("mensaje_confirmar", "confirmar_cancelar_descarga")), True, (255, 255, 255))
     pantalla.blit(texto, texto.get_rect(centerx=caja.centerx, top=caja.top + 15))
 
     opciones = [t("si"), t("no")]

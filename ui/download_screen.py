@@ -15,6 +15,7 @@ def manejar_input_descargando(event):
     if event.type == pygame.JOYBUTTONDOWN and event.button == BOTON_B:
         estado["pantalla_previa"] = DESCARGANDO
         estado["confirmar_indice"] = 1  # arranca en "No"
+        estado["mensaje_confirmar"] = "confirmar_cancelar_descarga"
         estado["pantalla"] = CONFIRMAR_CANCELAR
 
 
