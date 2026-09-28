@@ -82,6 +82,12 @@ TEXTOS = {
         "renombrar_elegir_torrent": "Renombrar: elegi un torrent",
         "cambiar_carpeta_elegir_torrent": "Cambiar carpeta: elegi un torrent",
         "no_hay_torrents_cargados": "No hay torrents cargados todavia",
+        "reordenar_torrents": "Reordenar torrents",
+        "borrar_torrent": "Borrar un torrent",
+        "borrar_elegir_torrent": "Borrar: elegi un torrent",
+        "confirmar_borrar_torrent": "¿Borrar este torrent?",
+        "reordenar_titulo": "Reordenar torrents",
+        "reordenar_footer": "X: Subir  Y: Bajar  B: Volver",
     },
     "en": {
         # Main menu
@@ -155,6 +161,12 @@ TEXTOS = {
         "renombrar_elegir_torrent": "Rename: choose a torrent",
         "cambiar_carpeta_elegir_torrent": "Change folder: choose a torrent",
         "no_hay_torrents_cargados": "No torrents added yet",
+        "reordenar_torrents": "Reorder torrents",
+        "borrar_torrent": "Delete a torrent",
+        "borrar_elegir_torrent": "Delete: choose a torrent",
+        "confirmar_borrar_torrent": "Delete this torrent?",
+        "reordenar_titulo": "Reorder torrents",
+        "reordenar_footer": "X: Move up  Y: Move down  B: Back",
     },
 }
 

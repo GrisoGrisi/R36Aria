@@ -18,6 +18,7 @@ NUEVOS_TORRENTS_LISTA = "NUEVOS_TORRENTS_LISTA"
 ENTRADA_TEXTO = "ENTRADA_TEXTO"
 OPCIONES = "OPCIONES"
 SELECCIONAR_CATEGORIA = "SELECCIONAR_CATEGORIA"
+REORDENAR_TORRENTS = "REORDENAR_TORRENTS"
 ERROR_POPUP = "ERROR_POPUP"
 
 # --- Timeouts configurables ---
@@ -58,9 +59,10 @@ def estado_inicial():
 
         # Pantalla de Opciones y edicion de categorias existentes
         "opciones_menu_cursor": 0,
-        "editar_categoria_modo": "nombre",  # "nombre" o "carpeta": que campo se va a editar
+        "editar_categoria_modo": "nombre",  # "nombre"/"carpeta"/"borrar": que se va a hacer
         "editar_categoria_indice_cursor": 0,
-        "editar_categoria_indice_actual": None,  # indice dentro de opciones_categorias que se esta editando
+        "editar_categoria_indice_actual": None,  # indice dentro de opciones_categorias que se esta editando/borrando
+        "reordenar_indice_cursor": 0,
 
         # Resolucion de metadata / archivos del torrent
         "opcion_actual": None,
@@ -94,8 +96,9 @@ def estado_inicial():
         "indice_extraccion_actual": 0,
         "total_extraccion": 0,
 
-        # Confirmar cancelar
+        # Confirmar cancelar (reutilizado tambien para confirmar borrado de un torrent)
         "confirmar_indice": 1,  # 0 = Si, 1 = No (arranca en No por seguridad)
+        "mensaje_confirmar": "confirmar_cancelar_descarga",  # clave de i18n a mostrar en el popup
 
         # Error popup
         "mensaje_error": "",
