@@ -27,7 +27,7 @@ from core.state_manager import (
     estado, MENU_PRINCIPAL, RESOLVIENDO_METADATA, LISTA_ARCHIVOS,
     DESCARGANDO, ELEGIR_ACCION_ARCHIVO, EXTRAYENDO, DESCARGA_COMPLETA,
     CONFIRMAR_CANCELAR, NUEVOS_TORRENTS_LISTA, ENTRADA_TEXTO,
-    OPCIONES, SELECCIONAR_CATEGORIA, ERROR_POPUP,
+    OPCIONES, SELECCIONAR_CATEGORIA, REORDENAR_TORRENTS, ERROR_POPUP,
 )
 
 from ui import theme
@@ -42,6 +42,8 @@ from ui.agregar_torrent_screen import (
 from ui.options_screen import (
     manejar_input_opciones, dibujar_opciones, mover_cursor_opciones,
     manejar_input_seleccionar_categoria, dibujar_seleccionar_categoria, mover_cursor_seleccionar_categoria,
+    manejar_input_confirmar_borrado,
+    manejar_input_reordenar, dibujar_reordenar, mover_cursor_reordenar,
 )
 from ui.extraction_screen import (
     manejar_input_eleccion_archivo, dibujar_eleccion_archivo,
@@ -53,7 +55,7 @@ from ui.download_screen import (
     actualizar_descargando, dibujar_descargando, dibujar_descarga_completa,
     cancelar_y_limpiar_si_hay_descarga_activa,
 )
-from ui.popups import manejar_input_error_popup, dibujar_error_popup
+from ui.popups import manejar_input_error_popup, dibujar_error_popup, dibujar_confirmar_cancelar
 
 FPS = 30
 
@@ -85,7 +87,10 @@ def procesar_input(event):
         manejar_input_descargando(event)
 
     elif pantalla_actual == CONFIRMAR_CANCELAR:
-        manejar_input_confirmar_cancelar_descarga(event)
+        if estado["pantalla_previa"] == DESCARGANDO:
+            manejar_input_confirmar_cancelar_descarga(event)
+        else:
+            manejar_input_confirmar_borrado(event)
 
     elif pantalla_actual == DESCARGA_COMPLETA:
         manejar_input_descarga_completa(event)
@@ -104,6 +109,9 @@ def procesar_input(event):
 
     elif pantalla_actual == SELECCIONAR_CATEGORIA:
         manejar_input_seleccionar_categoria(event)
+
+    elif pantalla_actual == REORDENAR_TORRENTS:
+        manejar_input_reordenar(event)
 
     elif pantalla_actual == ERROR_POPUP:
         manejar_input_error_popup(event)
@@ -148,6 +156,8 @@ def aplicar_repeticion_direccion():
         mover_cursor_opciones(direccion)
     elif pantalla_actual == SELECCIONAR_CATEGORIA:
         mover_cursor_seleccionar_categoria(direccion)
+    elif pantalla_actual == REORDENAR_TORRENTS:
+        mover_cursor_reordenar(direccion)
 
 
 def dibujar(pantalla_pygame):
@@ -160,7 +170,11 @@ def dibujar(pantalla_pygame):
     elif pantalla_actual == LISTA_ARCHIVOS:
         dibujar_lista_archivos(pantalla_pygame)
     elif pantalla_actual in (DESCARGANDO, CONFIRMAR_CANCELAR):
-        dibujar_descargando(pantalla_pygame)
+        if pantalla_actual == CONFIRMAR_CANCELAR and estado["pantalla_previa"] != DESCARGANDO:
+            dibujar_seleccionar_categoria(pantalla_pygame)
+            dibujar_confirmar_cancelar(pantalla_pygame)
+        else:
+            dibujar_descargando(pantalla_pygame)
     elif pantalla_actual == DESCARGA_COMPLETA:
         dibujar_descarga_completa(pantalla_pygame)
     elif pantalla_actual == ELEGIR_ACCION_ARCHIVO:
@@ -175,6 +189,8 @@ def dibujar(pantalla_pygame):
         dibujar_opciones(pantalla_pygame)
     elif pantalla_actual == SELECCIONAR_CATEGORIA:
         dibujar_seleccionar_categoria(pantalla_pygame)
+    elif pantalla_actual == REORDENAR_TORRENTS:
+        dibujar_reordenar(pantalla_pygame)
     elif pantalla_actual == ERROR_POPUP:
         # Redibuja la pantalla de fondo segun a donde se va a volver, y el popup encima
         if estado["pantalla_anterior"] == MENU_PRINCIPAL:
