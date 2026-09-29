@@ -1,4 +1,5 @@
 # R36Aria
+
 Torrenting client UI for R36S consoles, using Aria2 client as a base made by the goat Tatsuhiro Tsujikawa.
 
 Just drag and drop .torrent files on the /torrents folder and edit /config/options.json to add them to the ui:
@@ -41,6 +42,9 @@ Just drag and drop .torrent files on the /torrents folder and edit /config/optio
 }
 
 ```
+## Language Settings ##
+
+You can change the language between english and spanish by pressing SELECT to open the settings menu, and pressing A on the Language / Idioma setting.
 
 ## Scan For Torrents feature ##
 
@@ -49,6 +53,8 @@ Once in there you can pick a file and the on-screen keyboard will appear, once t
 then, after pressing START to confirm the name, you can manually type the path where the downloads will save. Press START one more time to save the changes.
 
 With this process you can edit options.json without having to access to it.
+
+*Also, in the options menu, you have some tools to edit this file too, like renaming, changing download path, reordering, and deleting the torrents from the list.*
 
 
 ## .zip Files Handling ##
@@ -75,6 +81,8 @@ The extracted contents will be stored in the same folder, not in a subfolder.
 **Main Menu Controls**
 
 - START: Scan the /torrents folder in search of non-added torrents.
+
+- SELECT: Opens the settings menu.
 
 
 **On-Torrent Controls**
