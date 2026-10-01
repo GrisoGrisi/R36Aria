@@ -69,6 +69,23 @@ def _entrar_descargando():
     estado["pantalla"] = DESCARGANDO
 
 
+def _formatear_tamano(bytes_):
+    tamano = float(bytes_)
+    for unidad in ("B", "KB", "MB", "GB"):
+        if tamano < 1024 or unidad == "GB":
+            return f"{tamano:.0f} {unidad}" if unidad == "B" else f"{tamano:.1f} {unidad}"
+        tamano /= 1024
+    return f"{tamano:.1f} TB"
+
+
+def _truncar_para_ancho(texto, fuente, ancho_max):
+    if fuente.size(texto)[0] <= ancho_max:
+        return texto
+    while texto and fuente.size(texto + "...")[0] > ancho_max:
+        texto = texto[:-1]
+    return texto + "..." if texto else "..."
+
+
 def dibujar_lista_archivos(pantalla):
     archivos_filtrados = obtener_archivos_filtrados()
 
@@ -90,14 +107,26 @@ def dibujar_lista_archivos(pantalla):
             pygame.draw.rect(pantalla, theme.COLOR_CURSOR,
                               (10, y, theme.ANCHO - 20, theme.ALTURA_ITEM - 4), border_radius=6)
 
-        nombre_archivo = os.path.basename(archivo["path"])
         color_texto = theme.COLOR_ACENTO if es_elegido else theme.COLOR_TEXTO
+
+        texto_tamano = _formatear_tamano(int(archivo.get("length", 0)))
+        render_tamano = theme.fuente_item.render(texto_tamano, True, theme.COLOR_TEXTO_APAGADO)
+        ancho_tamano = render_tamano.get_width()
+
+        ancho_ok = 30 if es_elegido else 0
+        ancho_disponible_nombre = theme.ANCHO - 26 - 20 - ancho_tamano - 10 - ancho_ok
+
+        nombre_archivo = os.path.basename(archivo["path"])
+        nombre_archivo = _truncar_para_ancho(nombre_archivo, theme.fuente_item, ancho_disponible_nombre)
         texto = theme.fuente_item.render(nombre_archivo, True, color_texto)
         pantalla.blit(texto, (26, y + 6))
 
+        x_tamano = theme.ANCHO - 20 - ancho_ok - ancho_tamano
+        pantalla.blit(render_tamano, (x_tamano, y + 6))
+
         if es_elegido:
             marca = theme.fuente_item.render("OK", True, theme.COLOR_OK)
-            pantalla.blit(marca, (theme.ANCHO - 50, y + 6))
+            pantalla.blit(marca, (theme.ANCHO - 20 - marca.get_width(), y + 6))
 
     if not archivos_filtrados:
         texto = theme.fuente_item.render(t("sin_resultados"), True, theme.COLOR_TEXTO_APAGADO)
