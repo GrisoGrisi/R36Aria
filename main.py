@@ -18,7 +18,7 @@ except ImportError:
         sys.path.insert(0, _VENDOR_DIR)
     import pygame
 
-from core import aria2_client, fbdev, config, settings
+from core import aria2_client, fbdev, config, settings, audio
 from core.input_handler import (
     inicializar_joystick, BOTON_SELECT, BOTON_START,
     registrar_evento_direccion, verificar_repeticion, limpiar_repeticion,
@@ -229,6 +229,8 @@ def main():
         print(f"[R36ARIA] Joystick detectado: {joy.get_name()} (ejes={joy.get_numaxes()} botones={joy.get_numbuttons()} hats={joy.get_numhats()})")
     else:
         print("[R36ARIA] No se detecto ningun joystick")
+
+    audio.inicializar()
 
     fb = fbdev.FramebufferDirecto()
     try:
