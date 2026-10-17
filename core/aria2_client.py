@@ -64,6 +64,10 @@ def iniciar_aria2():
         "--enable-rpc",
         "--rpc-listen-all=false",
         "--rpc-listen-port=6800",
+        # Por defecto aria2 descarta pedidos RPC de mas de 2M, y un .torrent
+        # viaja en base64 (~33% mas grande) dentro del pedido: los torrents
+        # grandes (muchos archivos/piezas) eran rechazados.
+        "--rpc-max-request-size=64M",
         f"--dir={DIR_TEMPORAL}",
         "--seed-time=0",
         "--follow-torrent=mem",
@@ -90,15 +94,27 @@ def detener_aria2():
             _proc.kill()
 
 
-def rpc_call(method, params=None):
+def rpc_call(method, params=None, timeout=5):
+    """timeout (segundos) es chico por defecto porque la mayoria de las
+    llamadas se hacen en cada frame; las pesadas (agregar un .torrent
+    grande, listar miles de archivos) piden uno mas largo."""
     payload = {
         "jsonrpc": "2.0",
         "id": "r36aria",
         "method": method,
         "params": params or [],
     }
-    r = requests.post(RPC_URL, json=payload, timeout=5)
-    r.raise_for_status()
+    r = requests.post(RPC_URL, json=payload, timeout=timeout)
+    if not r.ok:
+        # aria2 explica el motivo real en el cuerpo JSON; raise_for_status()
+        # lo escondia detras de un "400 Client Error" generico.
+        try:
+            motivo = r.json().get("error", {}).get("message")
+        except ValueError:
+            motivo = None
+        raise RuntimeError(
+            f"aria2 rechazo '{method}' (HTTP {r.status_code}): {motivo or r.text[:200]}"
+        )
     return r.json()
 
 
@@ -123,7 +139,7 @@ def agregar_torrent_en_pausa(ruta_torrent):
     resolucion de metadata."""
     with open(ruta_torrent, "rb") as f:
         contenido_b64 = base64.b64encode(f.read()).decode("ascii")
-    resp = rpc_call("aria2.addTorrent", [contenido_b64, [], {"pause": "true"}])
+    resp = rpc_call("aria2.addTorrent", [contenido_b64, [], {"pause": "true"}], timeout=60)
     return resp["result"]  # gid definitivo
 
 
@@ -147,7 +163,10 @@ def chequear_metadata(gid):
 
 
 def obtener_archivos(gid):
-    resp = rpc_call("aria2.getFiles", [gid])
+    # No se llama en cada frame (solo al entrar a la lista y al terminar),
+    # asi que puede tener un timeout largo: en torrents con miles de
+    # archivos la respuesta es muy grande.
+    resp = rpc_call("aria2.getFiles", [gid], timeout=60)
     return resp["result"]
 
 
