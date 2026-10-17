@@ -4,6 +4,7 @@ from ui import theme
 from core.state_manager import estado, FILAS_TECLADO
 from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, BOTON_START, BOTON_L, obtener_direccion_input
 from core.i18n import t
+from core import audio
 
 
 def obtener_archivos_filtrados():
@@ -24,6 +25,9 @@ def letra_con_caso_actual():
 
 def mover_cursor_teclado(direccion):
     x, y = direccion
+    fila_anterior = estado["fila_teclado"]
+    col_anterior = estado["col_teclado"]
+
     if y == 1:
         estado["fila_teclado"] = max(0, estado["fila_teclado"] - 1)
     elif y == -1:
@@ -36,6 +40,9 @@ def mover_cursor_teclado(direccion):
         estado["col_teclado"] = min(len(fila_actual) - 1, estado["col_teclado"] + 1)
 
     estado["col_teclado"] = min(estado["col_teclado"], len(fila_actual) - 1)
+
+    if estado["fila_teclado"] != fila_anterior or estado["col_teclado"] != col_anterior:
+        audio.reproducir_navegacion()
 
 
 def manejar_input_teclado(event):

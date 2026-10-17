@@ -3,7 +3,7 @@ import pygame
 from ui import theme
 from core.state_manager import estado, MENU_PRINCIPAL, DESCARGANDO
 from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_SELECT, obtener_direccion_input
-from core import aria2_client
+from core import aria2_client, audio
 from ui.keyboard import obtener_archivos_filtrados, manejar_input_teclado, dibujar_overlay_busqueda
 from core.state_manager import resetear_para_menu
 from core.i18n import t
@@ -18,10 +18,13 @@ def _calcular_offset_scroll(indice_cursor, total_items):
 def mover_cursor_lista(direccion):
     archivos_filtrados = obtener_archivos_filtrados()
     _, y = direccion
+    anterior = estado["indice_cursor"]
     if y == 1:
         estado["indice_cursor"] = max(0, estado["indice_cursor"] - 1)
     elif y == -1:
         estado["indice_cursor"] = min(len(archivos_filtrados) - 1, estado["indice_cursor"] + 1)
+    if estado["indice_cursor"] != anterior:
+        audio.reproducir_navegacion()
 
 
 def manejar_input_lista_archivos(event):

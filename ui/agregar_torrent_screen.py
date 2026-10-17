@@ -1,7 +1,7 @@
 import os
 import pygame
 from ui import theme
-from core import config, aria2_client
+from core import config, aria2_client, audio
 from core.state_manager import (
     estado, MENU_PRINCIPAL, NUEVOS_TORRENTS_LISTA, ENTRADA_TEXTO,
     SELECCIONAR_CATEGORIA,
@@ -53,10 +53,13 @@ def mover_cursor_lista_nuevos(direccion):
     total = len(estado["torrents_nuevos_encontrados"])
     if total == 0:
         return
+    anterior = estado["torrents_nuevos_indice_cursor"]
     if y == 1:
         estado["torrents_nuevos_indice_cursor"] = max(0, estado["torrents_nuevos_indice_cursor"] - 1)
     elif y == -1:
         estado["torrents_nuevos_indice_cursor"] = min(total - 1, estado["torrents_nuevos_indice_cursor"] + 1)
+    if estado["torrents_nuevos_indice_cursor"] != anterior:
+        audio.reproducir_navegacion()
 
 
 def manejar_input_lista_nuevos(event):

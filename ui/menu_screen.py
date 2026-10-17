@@ -2,7 +2,7 @@ import pygame
 from ui import theme
 from core.state_manager import estado, RESOLVIENDO_METADATA, LISTA_ARCHIVOS, MENU_PRINCIPAL, OPCIONES
 from core.input_handler import BOTON_A, BOTON_SELECT, BOTON_START, obtener_direccion_input
-from core import aria2_client
+from core import aria2_client, audio
 from core.i18n import t
 from ui.popups import mostrar_error_popup
 
@@ -15,10 +15,13 @@ def construir_menu_principal(opciones_config):
 
 def mover_cursor_menu(direccion):
     _, y = direccion
+    anterior = estado["indice_menu"]
     if y == 1:
         estado["indice_menu"] = max(0, estado["indice_menu"] - 1)
     elif y == -1:
         estado["indice_menu"] = min(len(estado["opciones_menu"]) - 1, estado["indice_menu"] + 1)
+    if estado["indice_menu"] != anterior:
+        audio.reproducir_navegacion()
 
 
 def manejar_input_menu(event, on_salir):
@@ -59,14 +62,17 @@ def _entrar_con_torrent_local(opcion_elegida):
     ruta = aria2_client.resolver_ruta_torrent(opcion_elegida["torrent_path"])
     try:
         gid = aria2_client.agregar_torrent_en_pausa(ruta)
+        # Se guarda ya para que, si listar los archivos falla, el popup de
+        # error pueda sacar este torrent de aria2 en vez de dejarlo colgado.
+        estado["gid"] = gid
+        archivos = aria2_client.obtener_archivos(gid)
     except Exception as e:
         print(f"[R36ARIA] Error al leer/agregar torrent local '{ruta}': {e}")
         mostrar_error_popup("error_leer_torrent", MENU_PRINCIPAL)
         return
 
-    estado["gid"] = gid
     estado["opcion_actual"] = opcion_elegida
-    estado["archivos"] = aria2_client.obtener_archivos(gid)
+    estado["archivos"] = archivos
     estado["indice_cursor"] = 0
     estado["indices_elegidos"] = set()
     estado["pantalla"] = LISTA_ARCHIVOS

@@ -6,7 +6,7 @@ from core.state_manager import (
 )
 from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, obtener_direccion_input
 from core.i18n import t
-from core import settings, config
+from core import settings, config, audio
 from ui.popups import manejar_input_confirmar_cancelar
 
 
@@ -37,10 +37,13 @@ def _opciones_menu():
 def mover_cursor_opciones(direccion):
     _, y = direccion
     total = len(_opciones_menu())
+    anterior = estado["opciones_menu_cursor"]
     if y == 1:
         estado["opciones_menu_cursor"] = max(0, estado["opciones_menu_cursor"] - 1)
     elif y == -1:
         estado["opciones_menu_cursor"] = min(total - 1, estado["opciones_menu_cursor"] + 1)
+    if estado["opciones_menu_cursor"] != anterior:
+        audio.reproducir_navegacion()
 
 
 def manejar_input_opciones(event):
@@ -103,10 +106,13 @@ def mover_cursor_seleccionar_categoria(direccion):
     total = len(estado["opciones_categorias"])
     if total == 0:
         return
+    anterior = estado["editar_categoria_indice_cursor"]
     if y == 1:
         estado["editar_categoria_indice_cursor"] = max(0, estado["editar_categoria_indice_cursor"] - 1)
     elif y == -1:
         estado["editar_categoria_indice_cursor"] = min(total - 1, estado["editar_categoria_indice_cursor"] + 1)
+    if estado["editar_categoria_indice_cursor"] != anterior:
+        audio.reproducir_navegacion()
 
 
 def manejar_input_seleccionar_categoria(event):
@@ -202,10 +208,13 @@ def mover_cursor_reordenar(direccion):
     total = len(estado["opciones_categorias"])
     if total == 0:
         return
+    anterior = estado["reordenar_indice_cursor"]
     if y == 1:
         estado["reordenar_indice_cursor"] = max(0, estado["reordenar_indice_cursor"] - 1)
     elif y == -1:
         estado["reordenar_indice_cursor"] = min(total - 1, estado["reordenar_indice_cursor"] + 1)
+    if estado["reordenar_indice_cursor"] != anterior:
+        audio.reproducir_navegacion()
 
 
 def manejar_input_reordenar(event):
