@@ -7,6 +7,7 @@ from core import aria2_client, audio
 from ui.keyboard import obtener_archivos_filtrados, manejar_input_teclado, dibujar_overlay_busqueda
 from core.state_manager import resetear_para_menu
 from core.i18n import t
+from core.formato import formatear_bytes
 
 
 def _calcular_offset_scroll(indice_cursor, total_items):
@@ -99,7 +100,20 @@ def dibujar_lista_archivos(pantalla):
 
     pantalla.fill(theme.COLOR_FONDO)
     nombre = estado["opcion_actual"]["nombre"] if estado["opcion_actual"] else ""
-    theme.dibujar_header(pantalla, nombre)
+
+    # Espacio que van a ocupar los archivos marcados (se suman TODOS los
+    # marcados, aunque el filtro de busqueda los este ocultando). En rojo si
+    # no entran en el espacio libre de la tarjeta.
+    texto_espacio = None
+    color_espacio = None
+    elegidos = estado["indices_elegidos"]
+    if elegidos:
+        total = sum(int(a.get("length", 0)) for a in estado["archivos"] if a["index"] in elegidos)
+        texto_espacio = t("espacio_seleccion", espacio=formatear_bytes(total))
+        libre = aria2_client.espacio_libre_bytes()
+        if libre is not None and total > libre:
+            color_espacio = theme.COLOR_ERROR
+    theme.dibujar_header(pantalla, nombre, texto_derecha=texto_espacio, color_derecha=color_espacio)
 
     offset = _calcular_offset_scroll(estado["indice_cursor"], len(archivos_filtrados))
     visibles = archivos_filtrados[offset:offset + theme.ITEMS_VISIBLES]

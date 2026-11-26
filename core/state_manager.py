@@ -42,6 +42,7 @@ def estado_inicial():
     return {
         "pantalla": MENU_PRINCIPAL,
         "pantalla_anterior": MENU_PRINCIPAL,
+        "pantalla_previa": MENU_PRINCIPAL,  # a donde volver desde CONFIRMAR_CANCELAR
         "idioma": "es",  # se sobreescribe al arrancar con core.settings.cargar_idioma()
 
         # Menu principal
@@ -59,6 +60,7 @@ def estado_inicial():
 
         # Pantalla de Opciones y edicion de categorias existentes
         "opciones_menu_cursor": 0,
+        "mensaje_opciones": None,  # (clave_i18n, kwargs) informativo, se muestra bajo la lista de Opciones
         "editar_categoria_modo": "nombre",  # "nombre"/"carpeta"/"borrar": que se va a hacer
         "editar_categoria_indice_cursor": 0,
         "editar_categoria_indice_actual": None,  # indice dentro de opciones_categorias que se esta editando/borrando

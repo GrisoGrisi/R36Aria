@@ -38,8 +38,29 @@ def inicializar_fuentes():
     fuente_footer = pygame.font.Font(None, 18)
 
 
-def dibujar_header(pantalla, titulo_texto):
+def _truncar_texto(texto, fuente, ancho_max):
+    if fuente.size(texto)[0] <= ancho_max:
+        return texto
+    while texto and fuente.size(texto + "...")[0] > ancho_max:
+        texto = texto[:-1]
+    return texto + "..." if texto else "..."
+
+
+def dibujar_header(pantalla, titulo_texto, texto_derecha=None, color_derecha=None):
+    """Header con el titulo a la izquierda y, opcionalmente, un texto
+    alineado a la derecha (espacio libre, espacio a ocupar, etc.). Si no
+    entran los dos, se recorta el titulo para que nunca se pisen."""
     pygame.draw.rect(pantalla, COLOR_HEADER, (0, 0, ANCHO, ALTO_HEADER))
+
+    ancho_max_titulo = ANCHO - 32
+    if texto_derecha:
+        render_der = fuente_item.render(texto_derecha, True, color_derecha or COLOR_TEXTO)
+        x_der = ANCHO - 16 - render_der.get_width()
+        y_der = (ALTO_HEADER - render_der.get_height()) // 2
+        pantalla.blit(render_der, (x_der, y_der))
+        ancho_max_titulo = x_der - 16 - 12
+
+    titulo_texto = _truncar_texto(titulo_texto, fuente_titulo, ancho_max_titulo)
     texto = fuente_titulo.render(titulo_texto, True, (255, 255, 255))
     pantalla.blit(texto, (16, 12))
 

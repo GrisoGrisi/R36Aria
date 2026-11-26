@@ -9,16 +9,7 @@ from core.input_handler import BOTON_A, BOTON_B
 from core import aria2_client, archivos
 from ui.popups import mostrar_error_popup, manejar_input_confirmar_cancelar, dibujar_confirmar_cancelar
 from core.i18n import t
-
-
-def _formatear_bytes(cantidad):
-    """Formatea bytes como B / KB / MB / GB (ej. 512 KB, 3.4 MB, 1.20 GB)."""
-    valor = float(cantidad)
-    for unidad in ("B", "KB", "MB"):
-        if valor < 1024:
-            return f"{valor:.0f} {unidad}" if unidad == "B" else f"{valor:.1f} {unidad}"
-        valor /= 1024
-    return f"{valor:.2f} GB"
+from core.formato import formatear_bytes as _formatear_bytes
 
 
 def manejar_input_descargando(event):

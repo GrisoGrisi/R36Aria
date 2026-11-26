@@ -287,6 +287,41 @@ def liberar_gid(gid, espera_max=5.0):
         pass
 
 
+_cache_espacio = {"ts": 0.0, "valor": None}
+
+
+def espacio_libre_bytes(max_edad=2.0):
+    """Espacio libre (bytes) de la tarjeta donde vive el proyecto (y por lo
+    tanto tempdownloads/). Se cachea unos segundos para poder llamarla en
+    cada frame sin consultar el sistema de archivos a 30 FPS. Devuelve
+    None si no se pudo consultar."""
+    ahora = time.monotonic()
+    if ahora - _cache_espacio["ts"] >= max_edad:
+        try:
+            valor = shutil.disk_usage(RAIZ_PROYECTO).free
+        except OSError:
+            valor = None
+        _cache_espacio["ts"] = ahora
+        _cache_espacio["valor"] = valor
+    return _cache_espacio["valor"]
+
+
+def temporal_tiene_contenido():
+    return os.path.isdir(DIR_TEMPORAL) and bool(os.listdir(DIR_TEMPORAL))
+
+
+def tamano_carpeta_temporal():
+    """Suma el tamano de todos los archivos dentro de DIR_TEMPORAL."""
+    total = 0
+    for carpeta, _, nombres in os.walk(DIR_TEMPORAL):
+        for nombre in nombres:
+            try:
+                total += os.path.getsize(os.path.join(carpeta, nombre))
+            except OSError:
+                pass
+    return total
+
+
 def vaciar_carpeta_temporal():
     """Borra TODO el contenido de DIR_TEMPORAL (archivos parciales, archivos
     de control .aria2 y carpetas del torrent). Es seguro porque esa carpeta
@@ -303,6 +338,7 @@ def vaciar_carpeta_temporal():
                 os.remove(ruta)
         except OSError as e:
             print(f"[R36ARIA] No se pudo borrar '{ruta}': {e}")
+    _cache_espacio["ts"] = 0.0  # fuerza releer el espacio libre ya liberado
 
 
 def cancelar_y_borrar_descarga(gid):
