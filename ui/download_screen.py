@@ -57,7 +57,7 @@ def cancelar_y_limpiar_si_hay_descarga_activa():
 def actualizar_descargando():
     """Se llama una vez por frame mientras estado['pantalla'] == DESCARGANDO."""
     try:
-        progreso, status, error = aria2_client.consultar_progreso(estado["gid"])
+        progreso, status, error, velocidad = aria2_client.consultar_progreso(estado["gid"])
     except Exception:
         mostrar_error_popup("error_descargar", MENU_PRINCIPAL)
         return
@@ -69,8 +69,11 @@ def actualizar_descargando():
     estado["progreso"] = progreso
     ahora = pygame.time.get_ticks() / 1000.0
 
-    if progreso > estado.get("_ultimo_progreso_registrado", 0.0):
-        estado["_ultimo_progreso_registrado"] = progreso
+    # Cuenta como "actividad" tanto avanzar como estar recibiendo datos:
+    # al principio de un torrent grande el progreso puede quedarse en 0%
+    # un buen rato aunque la descarga este funcionando.
+    if progreso > estado.get("_ultimo_progreso_registrado", 0.0) or velocidad > 0:
+        estado["_ultimo_progreso_registrado"] = max(progreso, estado.get("_ultimo_progreso_registrado", 0.0))
         estado["ultimo_avance_ts"] = ahora
 
     # Ademas de fijarnos en el status que reporta aria2, tratamos progreso
@@ -89,6 +92,7 @@ def actualizar_descargando():
 
     inactivo_desde = ahora - estado["ultimo_avance_ts"]
     if inactivo_desde > TIMEOUT_INACTIVIDAD_DESCARGA:
+        print(f"[R36ARIA] Timeout de inactividad: {inactivo_desde:.0f}s sin progreso ni velocidad")
         mostrar_error_popup("error_descargar", MENU_PRINCIPAL)
 
 
