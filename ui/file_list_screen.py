@@ -61,6 +61,8 @@ def manejar_input_lista_archivos(event):
                 _entrar_descargando()
 
         elif event.button == BOTON_B:
+            if estado.get("gid"):
+                aria2_client.liberar_gid(estado["gid"])
             resetear_para_menu()
 
 
