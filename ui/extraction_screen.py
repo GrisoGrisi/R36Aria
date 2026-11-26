@@ -3,7 +3,7 @@ import pygame
 from ui import theme
 from core.state_manager import estado, DESCARGA_COMPLETA, EXTRAYENDO, MENU_PRINCIPAL
 from core.input_handler import BOTON_A, obtener_direccion_input
-from core import archivos
+from core import archivos, aria2_client
 from ui.popups import mostrar_error_popup
 from core.i18n import t
 
@@ -32,11 +32,13 @@ def _ejecutar_accion_elegida():
 
     if idx == 0:
         # Mantener como esta: no hacemos nada mas.
+        aria2_client.terminar_procesamiento_descarga()
         estado["pantalla"] = DESCARGA_COMPLETA
         return
 
     cola = [r for r in estado["rutas_descargadas"] if archivos.es_comprimido_soportado(r)]
     if not cola:
+        aria2_client.terminar_procesamiento_descarga()
         estado["pantalla"] = DESCARGA_COMPLETA
         return
 
@@ -62,6 +64,7 @@ def _iniciar_extractor_actual():
         return True
     except Exception as e:
         print(f"[R36ARIA] Error al iniciar la extraccion de '{ruta}': {e}")
+        aria2_client.terminar_procesamiento_descarga()
         mostrar_error_popup("error_extraer", MENU_PRINCIPAL)
         return False
 
@@ -102,6 +105,7 @@ def actualizar_extrayendo():
     siguiente (si el usuario marco varios comprimidos en la descarga)."""
     extractor = estado["extractor"]
     if extractor is None:
+        aria2_client.terminar_procesamiento_descarga()
         estado["pantalla"] = DESCARGA_COMPLETA
         return
 
@@ -111,6 +115,7 @@ def actualizar_extrayendo():
         print(f"[R36ARIA] Error durante la extraccion: {e}")
         extractor.cerrar()
         estado["extractor"] = None
+        aria2_client.terminar_procesamiento_descarga()
         mostrar_error_popup("error_extraer", MENU_PRINCIPAL)
         return
 
@@ -133,6 +138,7 @@ def actualizar_extrayendo():
     estado["indice_extraccion_actual"] += 1
 
     if estado["indice_extraccion_actual"] >= len(estado["cola_extraccion"]):
+        aria2_client.terminar_procesamiento_descarga()
         estado["pantalla"] = DESCARGA_COMPLETA
         return
 

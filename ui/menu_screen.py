@@ -4,6 +4,7 @@ from core.state_manager import estado, RESOLVIENDO_METADATA, LISTA_ARCHIVOS, MEN
 from core.input_handler import BOTON_A, BOTON_SELECT, BOTON_START, obtener_direccion_input
 from core import aria2_client, audio
 from core.i18n import t
+from core.formato import formatear_bytes
 from ui.popups import mostrar_error_popup
 
 
@@ -86,7 +87,9 @@ def _calcular_offset_scroll(indice_cursor, total_items):
 
 def dibujar_menu(pantalla):
     pantalla.fill(theme.COLOR_FONDO)
-    theme.dibujar_header(pantalla, "R36ARIA")
+    libre = aria2_client.espacio_libre_bytes()
+    texto_libre = t("espacio_libre", espacio=formatear_bytes(libre)) if libre is not None else None
+    theme.dibujar_header(pantalla, "R36ARIA", texto_derecha=texto_libre)
 
     opciones = estado["opciones_menu"]
     offset = _calcular_offset_scroll(estado["indice_menu"], len(opciones))

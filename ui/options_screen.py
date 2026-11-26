@@ -6,7 +6,8 @@ from core.state_manager import (
 )
 from core.input_handler import BOTON_A, BOTON_B, BOTON_X, BOTON_Y, obtener_direccion_input
 from core.i18n import t
-from core import settings, config, audio
+from core import settings, config, audio, aria2_client
+from core.formato import formatear_bytes
 from ui.popups import manejar_input_confirmar_cancelar
 
 
@@ -28,6 +29,7 @@ def _opciones_menu():
         {"titulo": t("cambiar_carpeta_descarga"), "modo": "carpeta"},
         {"titulo": t("reordenar_torrents"), "modo": "reordenar"},
         {"titulo": t("borrar_torrent"), "modo": "borrar"},
+        {"titulo": t("borrar_temporales"), "modo": "temporales"},
         {"titulo": t("idioma_entrada"), "modo": "idioma"},
     ]
 
@@ -61,6 +63,18 @@ def manejar_input_opciones(event):
                 settings.guardar_idioma(estado["idioma"])
                 return  # se queda en Opciones, el titulo ya cambia solo
 
+            estado["mensaje_opciones"] = None
+
+            if entrada["modo"] == "temporales":
+                if not aria2_client.temporal_tiene_contenido():
+                    estado["mensaje_opciones"] = ("temp_vacia", {})
+                    return
+                estado["pantalla_previa"] = OPCIONES
+                estado["confirmar_indice"] = 1  # arranca en "No"
+                estado["mensaje_confirmar"] = "confirmar_borrar_temp"
+                estado["pantalla"] = CONFIRMAR_CANCELAR
+                return
+
             if entrada["modo"] == "reordenar":
                 estado["reordenar_indice_cursor"] = 0
                 estado["pantalla"] = REORDENAR_TORRENTS
@@ -71,7 +85,19 @@ def manejar_input_opciones(event):
             estado["pantalla"] = SELECCIONAR_CATEGORIA
 
         elif event.button == BOTON_B:
+            estado["mensaje_opciones"] = None
             estado["pantalla"] = MENU_PRINCIPAL
+
+
+def _borrar_temporales_confirmado():
+    liberado = aria2_client.tamano_carpeta_temporal()
+    aria2_client.vaciar_carpeta_temporal()
+    estado["mensaje_opciones"] = ("temp_borrado", {"espacio": formatear_bytes(liberado)})
+    estado["pantalla"] = OPCIONES
+
+
+def manejar_input_confirmar_borrar_temporales(event):
+    manejar_input_confirmar_cancelar(event, on_confirmar_si=_borrar_temporales_confirmado)
 
 
 def dibujar_opciones(pantalla):
@@ -89,6 +115,12 @@ def dibujar_opciones(pantalla):
         color = theme.COLOR_ACENTO if es_actual else theme.COLOR_TEXTO
         texto = theme.fuente_item.render(entrada["titulo"], True, color)
         pantalla.blit(texto, (26, y + 6))
+
+    if estado.get("mensaje_opciones"):
+        clave, kwargs = estado["mensaje_opciones"]
+        y_msg = theme.Y_INICIO_LISTA + len(_opciones_menu()) * theme.ALTURA_ITEM + 14
+        texto = theme.fuente_footer.render(t(clave, **kwargs), True, theme.COLOR_OK)
+        pantalla.blit(texto, (26, y_msg))
 
     theme.dibujar_footer(pantalla, t("opciones_footer"))
 
