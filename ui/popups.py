@@ -13,7 +13,11 @@ def mostrar_error_popup(clave_mensaje, pantalla_retorno):
     no el texto literal -- asi se traduce en el momento de dibujar, sin
     importar el idioma que estuviera activo cuando se disparo el error."""
     if estado.get("gid"):
-        aria2_client.cancelar_gid(estado["gid"])
+        if clave_mensaje == "error_descargar":
+            # La descarga fallo: se borra lo que haya quedado a medias.
+            aria2_client.cancelar_y_borrar_descarga(estado["gid"])
+        else:
+            aria2_client.cancelar_gid(estado["gid"])
 
     estado["pantalla_anterior"] = pantalla_retorno
     estado["mensaje_error"] = clave_mensaje

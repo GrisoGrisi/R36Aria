@@ -39,12 +39,19 @@ TEXTOS = {
         # Mensajes de error (usados como clave en mostrar_error_popup)
         "error_cargar_magnet": "Error al cargar magnet, intentelo de nuevo",
         "error_descargar": "Error al descargar, intentelo de nuevo",
+        "error_mover_archivo": "No se pudo mover el archivo a la carpeta destino",
         "error_extraer": "Error al extraer el archivo",
         "error_leer_torrent": "No se pudo leer el archivo .torrent",
         "error_no_torrents_nuevos": "No se encontraron torrents nuevos en torrents/",
 
         # Pantalla de descarga
         "cancelar_descarga_footer": "B: Cancelar descarga",
+        "espacio_libre": "Libre: {espacio}",
+        "espacio_seleccion": "Espacio: {espacio}",
+        "borrar_temporales": "Borrar archivos temporales",
+        "confirmar_borrar_temp": "¿Borrar los archivos temporales?",
+        "temp_borrado": "Temporales borrados: se liberaron {espacio}",
+        "temp_vacia": "No hay archivos temporales para borrar",
         "velocidad_descarga": "Velocidad: {velocidad}",
         "faltan_descarga": "Faltan: {faltante}",
         "archivo": "archivo",
@@ -120,12 +127,19 @@ TEXTOS = {
         # Error messages
         "error_cargar_magnet": "Error loading magnet, please try again",
         "error_descargar": "Download error, please try again",
+        "error_mover_archivo": "Could not move the file to the destination folder",
         "error_extraer": "Error extracting the file",
         "error_leer_torrent": "Could not read the .torrent file",
         "error_no_torrents_nuevos": "No new torrents found in torrents/",
 
         # Download screen
         "cancelar_descarga_footer": "B: Cancel download",
+        "espacio_libre": "Free: {espacio}",
+        "espacio_seleccion": "Space: {espacio}",
+        "borrar_temporales": "Delete temporary files",
+        "confirmar_borrar_temp": "Delete the temporary files?",
+        "temp_borrado": "Temporary files deleted: freed {espacio}",
+        "temp_vacia": "There are no temporary files to delete",
         "velocidad_descarga": "Speed: {velocidad}",
         "faltan_descarga": "Remaining: {faltante}",
         "archivo": "file",

@@ -9,16 +9,7 @@ from core.input_handler import BOTON_A, BOTON_B
 from core import aria2_client, archivos
 from ui.popups import mostrar_error_popup, manejar_input_confirmar_cancelar, dibujar_confirmar_cancelar
 from core.i18n import t
-
-
-def _formatear_bytes(cantidad):
-    """Formatea bytes como B / KB / MB / GB (ej. 512 KB, 3.4 MB, 1.20 GB)."""
-    valor = float(cantidad)
-    for unidad in ("B", "KB", "MB"):
-        if valor < 1024:
-            return f"{valor:.0f} {unidad}" if unidad == "B" else f"{valor:.1f} {unidad}"
-        valor /= 1024
-    return f"{valor:.2f} GB"
+from core.formato import formatear_bytes as _formatear_bytes
 
 
 def manejar_input_descargando(event):
@@ -39,28 +30,19 @@ def manejar_input_descarga_completa(event):
 
 
 def _cancelar_descarga_actual():
-    gid = estado["gid"]
-    rutas = aria2_client.rutas_seleccionadas(gid)
-    aria2_client.cancelar_gid(gid)
-    _borrar_archivos_incompletos(rutas)
+    aria2_client.cancelar_y_borrar_descarga(estado["gid"])
     resetear_para_menu()
-
-
-def _borrar_archivos_incompletos(rutas):
-    for ruta in rutas:
-        for candidato in (ruta, ruta + ".aria2"):
-            if os.path.exists(candidato):
-                try:
-                    os.remove(candidato)
-                except OSError:
-                    pass
 
 
 def cancelar_y_limpiar_si_hay_descarga_activa():
     """Se llama al salir del programa: si hay una descarga en curso (todavia
-    no terminada), se cancela y se borra lo incompleto. Si ya esta en la
-    pantalla de Descarga Completa, no se toca nada -- el archivo quedo bien."""
-    if estado["pantalla"] == DESCARGANDO and estado.get("gid"):
+    no terminada, incluso con el popup de 'cancelar?' abierto), se cancela y
+    se borra lo incompleto. Si ya esta en la pantalla de Descarga Completa,
+    no se toca nada -- el archivo quedo bien."""
+    descargando = estado["pantalla"] == DESCARGANDO or (
+        estado["pantalla"] == CONFIRMAR_CANCELAR and estado.get("pantalla_previa") == DESCARGANDO
+    )
+    if descargando and estado.get("gid"):
         _cancelar_descarga_actual()
 
 
@@ -94,11 +76,17 @@ def actualizar_descargando():
     # (o directamente no llegar a hacerlo de forma confiable en algunas
     # versiones/config de aria2) aun cuando el archivo ya esta completo.
     if status == "complete" or progreso >= 1.0:
-        _finalizar_descarga()
+        fallidos = _finalizar_descarga()
+        if fallidos:
+            # Los archivos que no se pudieron mover quedan en tempdownloads/:
+            # NO se borran (mostrar_error_popup solo limpia en error_descargar).
+            mostrar_error_popup("error_mover_archivo", MENU_PRINCIPAL)
+            return
         if any(archivos.es_comprimido_soportado(r) for r in estado["rutas_descargadas"]):
             estado["accion_archivo_indice"] = 0
             estado["pantalla"] = ELEGIR_ACCION_ARCHIVO
         else:
+            aria2_client.terminar_procesamiento_descarga()
             estado["pantalla"] = DESCARGA_COMPLETA
         return
 
@@ -112,21 +100,30 @@ def _finalizar_descarga():
     """Mueve todos los archivos descargados en esta tanda desde la carpeta
     temporal a la carpeta_destino real configurada para esta opcion, cada
     uno tomando solo ese archivo (sin subcarpetas del torrent), y guarda
-    las rutas finales para mostrarlas."""
-    rutas_temporales = aria2_client.rutas_seleccionadas(estado["gid"])
+    las rutas finales para mostrarlas. Devuelve la cantidad de archivos
+    que NO se pudieron mover (quedan en la carpeta temporal)."""
+    gid = estado["gid"]
+    rutas_temporales = aria2_client.rutas_seleccionadas(gid)
     carpeta_destino = estado["opcion_actual"]["carpeta_destino"]
 
+    # Primero se suelta el gid: asi aria2 cierra los archivos y no sigue
+    # tocandolos mientras los movemos.
+    aria2_client.liberar_gid(gid)
+
     rutas_finales = []
+    fallidos = 0
     for ruta_temporal in rutas_temporales:
         try:
             ruta_final = aria2_client.mover_a_destino_final(ruta_temporal, carpeta_destino)
         except Exception as e:
-            print(f"[R36ARIA] Error moviendo '{ruta_temporal}' a destino final: {e}")
+            print(f"[R36ARIA] Error moviendo '{ruta_temporal}' a '{carpeta_destino}': {e}")
             ruta_final = ruta_temporal  # al menos mostramos donde quedo de verdad
+            fallidos += 1
         rutas_finales.append(ruta_final)
 
     estado["rutas_descargadas"] = rutas_finales
-    print(f"[R36ARIA] Descarga completa, {len(rutas_finales)} archivo(s): {rutas_finales}")
+    print(f"[R36ARIA] Descarga completa, {len(rutas_finales)} archivo(s), {fallidos} sin mover: {rutas_finales}")
+    return fallidos
 
 
 def dibujar_descargando(pantalla):

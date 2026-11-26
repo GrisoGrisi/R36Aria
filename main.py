@@ -42,7 +42,7 @@ from ui.agregar_torrent_screen import (
 from ui.options_screen import (
     manejar_input_opciones, dibujar_opciones, mover_cursor_opciones,
     manejar_input_seleccionar_categoria, dibujar_seleccionar_categoria, mover_cursor_seleccionar_categoria,
-    manejar_input_confirmar_borrado,
+    manejar_input_confirmar_borrado, manejar_input_confirmar_borrar_temporales,
     manejar_input_reordenar, dibujar_reordenar, mover_cursor_reordenar,
 )
 from ui.extraction_screen import (
@@ -89,6 +89,8 @@ def procesar_input(event):
     elif pantalla_actual == CONFIRMAR_CANCELAR:
         if estado["pantalla_previa"] == DESCARGANDO:
             manejar_input_confirmar_cancelar_descarga(event)
+        elif estado["pantalla_previa"] == OPCIONES:
+            manejar_input_confirmar_borrar_temporales(event)
         else:
             manejar_input_confirmar_borrado(event)
 
@@ -170,7 +172,10 @@ def dibujar(pantalla_pygame):
     elif pantalla_actual == LISTA_ARCHIVOS:
         dibujar_lista_archivos(pantalla_pygame)
     elif pantalla_actual in (DESCARGANDO, CONFIRMAR_CANCELAR):
-        if pantalla_actual == CONFIRMAR_CANCELAR and estado["pantalla_previa"] != DESCARGANDO:
+        if pantalla_actual == CONFIRMAR_CANCELAR and estado["pantalla_previa"] == OPCIONES:
+            dibujar_opciones(pantalla_pygame)
+            dibujar_confirmar_cancelar(pantalla_pygame)
+        elif pantalla_actual == CONFIRMAR_CANCELAR and estado["pantalla_previa"] != DESCARGANDO:
             dibujar_seleccionar_categoria(pantalla_pygame)
             dibujar_confirmar_cancelar(pantalla_pygame)
         else:
