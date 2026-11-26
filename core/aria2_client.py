@@ -13,11 +13,14 @@ import time
 import requests
 
 RPC_URL = "http://localhost:6800/jsonrpc"
-DIR_TEMPORAL = "/tmp/r36aria_downloads"
 
 # Carpeta raiz del proyecto (donde vive main.py), independientemente de
 # desde donde se invoque el script.
 RAIZ_PROYECTO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Carpeta temporal de descargas: vive dentro del proyecto (en la SD) y no
+# en /tmp, que en muchas consolas es RAM (tmpfs) y se llena con archivos grandes.
+DIR_TEMPORAL = os.path.join(RAIZ_PROYECTO, "tempdownloads")
 CARPETA_TORRENTS = os.path.join(RAIZ_PROYECTO, "torrents")
 
 _proc = None
@@ -59,6 +62,8 @@ def iniciar_aria2():
         except OSError:
             pass
 
+    os.makedirs(DIR_TEMPORAL, exist_ok=True)
+
     _proc = subprocess.Popen([
         ruta_aria2c,
         "--enable-rpc",
@@ -72,6 +77,9 @@ def iniciar_aria2():
         "--seed-time=0",
         "--follow-torrent=mem",
         "--bt-stop-timeout=0",
+        # Sin preasignar el archivo completo: en tarjetas SD FAT/exFAT la
+        # preasignacion de un archivo grande tarda minutos con 0% visible.
+        "--file-allocation=none",
     ])
     # Pequeña espera para que el RPC este listo antes de la primera llamada
     time.sleep(1.0)
@@ -215,17 +223,23 @@ def mover_a_destino_final(ruta_origen, carpeta_destino):
 
 
 def consultar_progreso(gid):
-    """Devuelve (progreso 0-1, status, error) para el gid dado."""
-    status = rpc_call("aria2.tellStatus", [gid, ["completedLength", "totalLength", "status", "errorCode", "errorMessage"]])
+    """Devuelve (progreso 0-1, status, error, velocidad_bytes_s) para el gid."""
+    status = rpc_call("aria2.tellStatus", [gid, [
+        "completedLength", "totalLength", "status", "errorCode", "errorMessage",
+        "downloadSpeed", "connections",
+    ]])
     r = status["result"]
 
     if r.get("errorCode") and r["errorCode"] != "0":
-        return 0.0, "error", r.get("errorMessage", "Error desconocido")
+        motivo = r.get("errorMessage", "Error desconocido")
+        print(f"[R36ARIA] aria2 reporto error (codigo {r['errorCode']}): {motivo}")
+        return 0.0, "error", motivo, 0
 
     completado = int(r["completedLength"])
     total = int(r["totalLength"])
     progreso = completado / total if total else 0.0
-    return progreso, r["status"], None
+    velocidad = int(r.get("downloadSpeed", 0))
+    return progreso, r["status"], None, velocidad
 
 
 def cancelar_gid(gid):

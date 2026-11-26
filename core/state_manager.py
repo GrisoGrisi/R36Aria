@@ -26,7 +26,7 @@ TIMEOUT_METADATA = 90          # segundos totales esperando resolver el magnet
                                 # (los magnets sin buenos trackers/DHT pueden
                                 # tardar bastante; los .torrent locales no
                                 # usan este timeout, ya tienen la metadata)
-TIMEOUT_INACTIVIDAD_DESCARGA = 20   # segundos sin progreso en la descarga
+TIMEOUT_INACTIVIDAD_DESCARGA = 60   # segundos sin progreso NI velocidad de descarga
 
 FILAS_TECLADO = [
     list("1234567890"),
