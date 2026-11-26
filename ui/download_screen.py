@@ -12,16 +12,6 @@ from core.i18n import t
 from core.formato import formatear_bytes as _formatear_bytes
 
 
-def _formatear_bytes(cantidad):
-    """Formatea bytes como B / KB / MB / GB (ej. 512 KB, 3.4 MB, 1.20 GB)."""
-    valor = float(cantidad)
-    for unidad in ("B", "KB", "MB"):
-        if valor < 1024:
-            return f"{valor:.0f} {unidad}" if unidad == "B" else f"{valor:.1f} {unidad}"
-        valor /= 1024
-    return f"{valor:.2f} GB"
-
-
 def manejar_input_descargando(event):
     if event.type == pygame.JOYBUTTONDOWN and event.button == BOTON_B:
         estado["pantalla_previa"] = DESCARGANDO
