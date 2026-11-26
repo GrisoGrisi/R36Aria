@@ -86,6 +86,7 @@ def actualizar_descargando():
             estado["accion_archivo_indice"] = 0
             estado["pantalla"] = ELEGIR_ACCION_ARCHIVO
         else:
+            aria2_client.terminar_procesamiento_descarga()
             estado["pantalla"] = DESCARGA_COMPLETA
         return
 
