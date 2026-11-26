@@ -11,6 +11,16 @@ from ui.popups import mostrar_error_popup, manejar_input_confirmar_cancelar, dib
 from core.i18n import t
 
 
+def _formatear_bytes(cantidad):
+    """Formatea bytes como B / KB / MB / GB (ej. 512 KB, 3.4 MB, 1.20 GB)."""
+    valor = float(cantidad)
+    for unidad in ("B", "KB", "MB"):
+        if valor < 1024:
+            return f"{valor:.0f} {unidad}" if unidad == "B" else f"{valor:.1f} {unidad}"
+        valor /= 1024
+    return f"{valor:.2f} GB"
+
+
 def manejar_input_descargando(event):
     if event.type == pygame.JOYBUTTONDOWN and event.button == BOTON_B:
         estado["pantalla_previa"] = DESCARGANDO
@@ -57,7 +67,7 @@ def cancelar_y_limpiar_si_hay_descarga_activa():
 def actualizar_descargando():
     """Se llama una vez por frame mientras estado['pantalla'] == DESCARGANDO."""
     try:
-        progreso, status, error, velocidad = aria2_client.consultar_progreso(estado["gid"])
+        progreso, status, error, velocidad, completado, total = aria2_client.consultar_progreso(estado["gid"])
     except Exception:
         mostrar_error_popup("error_descargar", MENU_PRINCIPAL)
         return
@@ -67,6 +77,8 @@ def actualizar_descargando():
         return
 
     estado["progreso"] = progreso
+    estado["velocidad_descarga"] = velocidad
+    estado["bytes_faltantes"] = max(0, total - completado)
     ahora = pygame.time.get_ticks() / 1000.0
 
     # Cuenta como "actividad" tanto avanzar como estar recibiendo datos:
@@ -141,6 +153,15 @@ def dibujar_descargando(pantalla):
 
     porcentaje = theme.fuente_item.render(f"{int(estado['progreso'] * 100)}%", True, (255, 255, 255))
     pantalla.blit(porcentaje, porcentaje.get_rect(center=(theme.ANCHO // 2, y - 24)))
+
+    # Velocidad actual y lo que falta para terminar, debajo de la barra
+    texto_velocidad = t("velocidad_descarga", velocidad=_formatear_bytes(estado.get("velocidad_descarga", 0)) + "/s")
+    texto_faltante = t("faltan_descarga", faltante=_formatear_bytes(estado.get("bytes_faltantes", 0)))
+    render_vel = theme.fuente_item.render(texto_velocidad, True, theme.COLOR_TEXTO)
+    render_falt = theme.fuente_item.render(texto_faltante, True, theme.COLOR_TEXTO)
+    y_texto = y + alto_barra + 18
+    pantalla.blit(render_vel, render_vel.get_rect(center=(theme.ANCHO // 2, y_texto)))
+    pantalla.blit(render_falt, render_falt.get_rect(center=(theme.ANCHO // 2, y_texto + 28)))
 
     theme.dibujar_footer(pantalla, t("cancelar_descarga_footer"))
 
