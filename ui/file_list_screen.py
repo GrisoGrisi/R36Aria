@@ -67,6 +67,7 @@ def manejar_input_lista_archivos(event):
 def _entrar_descargando():
     aria2_client.iniciar_descarga_archivos(estado["gid"], estado["indices_elegidos"])
     estado["ultimo_completado"] = 0
+    estado["_ultimo_progreso_registrado"] = 0.0
     estado["ultimo_avance_ts"] = pygame.time.get_ticks() / 1000.0
     estado["progreso"] = 0.0
     estado["pantalla"] = DESCARGANDO
