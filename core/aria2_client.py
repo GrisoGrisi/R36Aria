@@ -341,6 +341,15 @@ def vaciar_carpeta_temporal():
     _cache_espacio["ts"] = 0.0  # fuerza releer el espacio libre ya liberado
 
 
+def terminar_procesamiento_descarga():
+    """Se llama cuando una descarga ya termino TODO su procesamiento (movida
+    al destino, y extraida si correspondia): vacia tempdownloads/ igual que
+    la opcion 'Borrar archivos temporales' de Opciones. Por ese momento los
+    archivos ya estan en su destino final, asi que en la carpeta temporal
+    solo quedan restos (archivos de control, carpetas vacias del torrent)."""
+    vaciar_carpeta_temporal()
+
+
 def cancelar_y_borrar_descarga(gid):
     """Cancelacion completa: detiene la descarga, espera a aria2, y borra
     todo lo que haya dejado en la carpeta temporal (archivos, parciales,
