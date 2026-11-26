@@ -190,10 +190,27 @@ def iniciar_descarga_archivos(gid, indices_elegidos):
     rpc_call("aria2.unpause", [gid])
 
 
+def limpiar_carpetas_vacias(carpeta):
+    """Borra 'carpeta' y sus padres mientras esten vacios, sin salirse nunca
+    de DIR_TEMPORAL (la propia DIR_TEMPORAL tampoco se borra)."""
+    base = os.path.realpath(DIR_TEMPORAL)
+    actual = os.path.realpath(carpeta)
+    while actual.startswith(base + os.sep):
+        try:
+            os.rmdir(actual)  # falla si no esta vacia
+        except OSError:
+            break
+        actual = os.path.dirname(actual)
+
+
 def mover_a_destino_final(ruta_origen, carpeta_destino):
     """Mueve el archivo ya descargado a carpeta_destino, tomando solo ese
     archivo (sin arrastrar ninguna subcarpeta que haya creado el torrent),
-    y sin pisar un archivo existente con el mismo nombre."""
+    y sin pisar un archivo existente con el mismo nombre. Verifica que el
+    archivo haya llegado completo antes de dar el movimiento por bueno."""
+    if not os.path.isfile(ruta_origen):
+        raise FileNotFoundError(f"No existe el archivo descargado: {ruta_origen}")
+
     os.makedirs(carpeta_destino, exist_ok=True)
     nombre = os.path.basename(ruta_origen)
     destino = os.path.join(carpeta_destino, nombre)
@@ -207,17 +224,14 @@ def mover_a_destino_final(ruta_origen, carpeta_destino):
         destino = os.path.join(carpeta_destino, f"{base} ({contador}){ext}")
         contador += 1
 
+    tamano_origen = os.path.getsize(ruta_origen)
     shutil.move(ruta_origen, destino)
 
-    # Intento de limpieza: si la carpeta que creo el torrent (dentro de la
-    # carpeta temporal) quedo vacia, la borramos. No es grave si falla.
-    carpeta_origen = os.path.dirname(ruta_origen)
-    try:
-        while carpeta_origen and carpeta_origen != DIR_TEMPORAL and not os.listdir(carpeta_origen):
-            os.rmdir(carpeta_origen)
-            carpeta_origen = os.path.dirname(carpeta_origen)
-    except OSError:
-        pass
+    if not os.path.isfile(destino) or os.path.getsize(destino) != tamano_origen:
+        raise OSError(f"El archivo no llego completo a {destino}")
+
+    # Limpieza: carpetas que creo el torrent dentro de la temporal y quedaron vacias.
+    limpiar_carpetas_vacias(os.path.dirname(ruta_origen))
 
     return destino
 
@@ -243,11 +257,71 @@ def consultar_progreso(gid):
 
 
 def cancelar_gid(gid):
-    """Elimina la descarga/metadata en curso sin importar su estado actual."""
+    """Elimina la descarga/metadata en curso sin importar su estado actual.
+    OJO: forceRemove es asincronico, aria2 la detiene recien en su
+    siguiente vuelta interna. Si hay que tocar archivos despues, usar
+    liberar_gid(), que espera a que realmente se haya detenido."""
     try:
         rpc_call("aria2.forceRemove", [gid])
     except Exception:
         pass
+
+
+def liberar_gid(gid, espera_max=5.0):
+    """Detiene el gid, espera a que aria2 lo haya soltado de verdad (cierra
+    archivos y guarda/borra su archivo de control .aria2) y lo saca de la
+    lista de resultados. Seguro de llamar aunque ya este completo."""
+    cancelar_gid(gid)
+    limite = time.time() + espera_max
+    while time.time() < limite:
+        try:
+            estado_gid = rpc_call("aria2.tellStatus", [gid, ["status"]])["result"]["status"]
+        except Exception:
+            break  # ya no existe para aria2
+        if estado_gid in ("removed", "complete", "error"):
+            break
+        time.sleep(0.05)
+    try:
+        rpc_call("aria2.removeDownloadResult", [gid])
+    except Exception:
+        pass
+
+
+def vaciar_carpeta_temporal():
+    """Borra TODO el contenido de DIR_TEMPORAL (archivos parciales, archivos
+    de control .aria2 y carpetas del torrent). Es seguro porque esa carpeta
+    es solo de trabajo de R36ARIA y se descarga un torrent a la vez. Solo
+    usar cuando aria2 ya solto el gid (ver liberar_gid)."""
+    if not os.path.isdir(DIR_TEMPORAL):
+        return
+    for nombre in os.listdir(DIR_TEMPORAL):
+        ruta = os.path.join(DIR_TEMPORAL, nombre)
+        try:
+            if os.path.isdir(ruta) and not os.path.islink(ruta):
+                shutil.rmtree(ruta, ignore_errors=True)
+            else:
+                os.remove(ruta)
+        except OSError as e:
+            print(f"[R36ARIA] No se pudo borrar '{ruta}': {e}")
+
+
+def cancelar_y_borrar_descarga(gid):
+    """Cancelacion completa: detiene la descarga, espera a aria2, y borra
+    todo lo que haya dejado en la carpeta temporal (archivos, parciales,
+    archivos .aria2 y carpetas)."""
+    rutas = rutas_seleccionadas(gid)
+    liberar_gid(gid)
+    for ruta in rutas:
+        for candidato in (ruta, ruta + ".aria2"):
+            try:
+                if os.path.exists(candidato):
+                    os.remove(candidato)
+            except OSError:
+                pass
+    # El archivo de control de un torrent multi-archivo NO queda junto al
+    # archivo sino en la raiz de DIR_TEMPORAL (<nombre del torrent>.aria2),
+    # asi que el borrado puntual de arriba no alcanza: se limpia todo.
+    vaciar_carpeta_temporal()
 
 
 def rutas_seleccionadas(gid):
