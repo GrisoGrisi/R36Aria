@@ -45,6 +45,8 @@ TEXTOS = {
 
         # Pantalla de descarga
         "cancelar_descarga_footer": "B: Cancelar descarga",
+        "velocidad_descarga": "Velocidad: {velocidad}",
+        "faltan_descarga": "Faltan: {faltante}",
         "archivo": "archivo",
         "archivos": "archivos",
         "descarga_completa": "Descarga completa",
@@ -124,6 +126,8 @@ TEXTOS = {
 
         # Download screen
         "cancelar_descarga_footer": "B: Cancel download",
+        "velocidad_descarga": "Speed: {velocidad}",
+        "faltan_descarga": "Remaining: {faltante}",
         "archivo": "file",
         "archivos": "files",
         "descarga_completa": "Download complete",

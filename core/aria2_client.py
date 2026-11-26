@@ -223,7 +223,7 @@ def mover_a_destino_final(ruta_origen, carpeta_destino):
 
 
 def consultar_progreso(gid):
-    """Devuelve (progreso 0-1, status, error, velocidad_bytes_s) para el gid."""
+    """Devuelve (progreso 0-1, status, error, velocidad_bytes_s, completado, total)."""
     status = rpc_call("aria2.tellStatus", [gid, [
         "completedLength", "totalLength", "status", "errorCode", "errorMessage",
         "downloadSpeed", "connections",
@@ -233,13 +233,13 @@ def consultar_progreso(gid):
     if r.get("errorCode") and r["errorCode"] != "0":
         motivo = r.get("errorMessage", "Error desconocido")
         print(f"[R36ARIA] aria2 reporto error (codigo {r['errorCode']}): {motivo}")
-        return 0.0, "error", motivo, 0
+        return 0.0, "error", motivo, 0, 0, 0
 
     completado = int(r["completedLength"])
     total = int(r["totalLength"])
     progreso = completado / total if total else 0.0
     velocidad = int(r.get("downloadSpeed", 0))
-    return progreso, r["status"], None, velocidad
+    return progreso, r["status"], None, velocidad, completado, total
 
 
 def cancelar_gid(gid):
